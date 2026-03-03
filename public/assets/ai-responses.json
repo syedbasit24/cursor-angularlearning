@@ -1,0 +1,206 @@
+{
+  "defaultResponse": "I don't have a specific answer for that yet. Try asking about Angular components, signals, services, routing, directives, RxJS, forms, or HTTP. You can also browse the Learn section for detailed lessons!",
+  "suggestedQuestions": [
+    "What is Angular?",
+    "What is a component?",
+    "What are Signals?",
+    "What is Dependency Injection?",
+    "How does routing work?",
+    "What is the difference between @Input and input()?",
+    "What are lifecycle hooks?",
+    "What is RxJS?",
+    "How do I make HTTP requests?",
+    "What is a standalone component?"
+  ],
+  "responses": [
+    {
+      "id": "what-is-angular",
+      "keywords": ["what is angular", "angular framework", "what angular", "define angular", "explain angular"],
+      "question": "What is Angular?",
+      "answer": "Angular is a TypeScript-based, open-source web framework built and maintained by Google. It is used to build Single Page Applications (SPAs) — web apps that load once and dynamically update without full page reloads.\n\nAngular provides a complete, opinionated solution out of the box: routing, forms, HTTP client, animations, dependency injection, and testing tools — all included.",
+      "codeExample": null,
+      "relatedTopics": ["Components", "Services", "Routing"],
+      "learnRoute": "/learn/basics"
+    },
+    {
+      "id": "component",
+      "keywords": ["component", "what is a component", "components", "@component", "create component"],
+      "question": "What is a Component?",
+      "answer": "A Component is the fundamental building block of an Angular application. Every visible part of the UI is a component.\n\nA component consists of:\n• TypeScript class — the logic and data\n• HTML template — the view\n• Optional CSS/SCSS styles\n\nIt is decorated with @Component which configures the selector (custom HTML tag), template, and styles.",
+      "codeExample": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-hello',\n  standalone: true,\n  template: `<h1>Hello, {{ name }}!</h1>`,\n})\nexport class HelloComponent {\n  name = 'Angular';\n}",
+      "relatedTopics": ["Templates", "Data Binding", "Lifecycle Hooks"],
+      "learnRoute": "/learn/components"
+    },
+    {
+      "id": "signals",
+      "keywords": ["signal", "signals", "angular signals", "what are signals", "signal()", "computed", "effect"],
+      "question": "What are Angular Signals?",
+      "answer": "Signals are Angular's new reactive primitive (introduced in Angular 16, stable in Angular 17+). A Signal is a wrapper around a value that notifies consumers when the value changes.\n\nThree core functions:\n• signal(value) — creates a writable signal\n• computed(() => ...) — creates a read-only derived signal\n• effect(() => ...) — runs side-effects when signals change\n\nSignals replace Zone.js for change detection, making Angular apps faster and more predictable.",
+      "codeExample": "import { signal, computed, effect } from '@angular/core';\n\n// Writable signal\nconst count = signal(0);\n\n// Derived (read-only) signal\nconst doubled = computed(() => count() * 2);\n\n// Side effect — runs when count changes\neffect(() => console.log('Count is:', count()));\n\n// Update the signal\ncount.set(5);         // → count() === 5\ncount.update(n => n + 1); // → count() === 6",
+      "relatedTopics": ["Components", "Services", "RxJS"],
+      "learnRoute": "/learn/signals"
+    },
+    {
+      "id": "dependency-injection",
+      "keywords": ["dependency injection", "di", "inject", "injectable", "provider", "providers", "inject()"],
+      "question": "What is Dependency Injection?",
+      "answer": "Dependency Injection (DI) is a design pattern where a class receives its dependencies from external sources rather than creating them itself. Angular has a built-in DI system.\n\nYou declare a service with @Injectable({ providedIn: 'root' }) and Angular creates a single shared instance (singleton) of it across the entire app.\n\nModern Angular uses the inject() function instead of constructor injection.",
+      "codeExample": "// 1. Create an injectable service\n@Injectable({ providedIn: 'root' })\nexport class ThemeService {\n  theme = signal<'light' | 'dark'>('light');\n  toggle() { this.theme.update(t => t === 'dark' ? 'light' : 'dark'); }\n}\n\n// 2. Inject it anywhere with inject()\n@Component({ ... })\nexport class HeaderComponent {\n  private theme = inject(ThemeService); // no constructor needed!\n  isDark = this.theme.isDark;\n}",
+      "relatedTopics": ["Services", "Components", "Signals"],
+      "learnRoute": "/learn/services"
+    },
+    {
+      "id": "routing",
+      "keywords": ["routing", "router", "routes", "navigate", "routerlink", "router-outlet", "lazy loading", "lazy load"],
+      "question": "How does Angular Routing work?",
+      "answer": "Angular Router is a client-side routing library that maps URL paths to components without reloading the page.\n\nKey concepts:\n• Routes array — maps paths to components\n• <router-outlet> — placeholder where the matched component renders\n• routerLink — directive for navigation links\n• loadComponent() — lazy loads components (better performance)\n• Guards — protect routes (e.g., authentication)",
+      "codeExample": "// app.routes.ts\nexport const routes: Routes = [\n  {\n    path: '',\n    loadComponent: () => import('./home.component').then(m => m.HomeComponent),\n  },\n  {\n    path: 'learn/:id',\n    loadComponent: () => import('./lesson.component').then(m => m.LessonComponent),\n  },\n  { path: '**', redirectTo: '' }, // 404 catch-all\n];\n\n// In template\n<a routerLink=\"/learn/signals\">Learn Signals</a>\n<router-outlet />  <!-- matched component renders here -->",
+      "relatedTopics": ["Lazy Loading", "Guards", "Components"],
+      "learnRoute": "/learn/routing"
+    },
+    {
+      "id": "data-binding",
+      "keywords": ["data binding", "interpolation", "property binding", "event binding", "two-way binding", "ngmodel", "[(ngmodel)]", "binding"],
+      "question": "What are the types of Data Binding?",
+      "answer": "Angular has 4 types of data binding:\n\n① Interpolation {{ }} — displays component data in the template\n② Property Binding [prop] — binds component data to an HTML property\n③ Event Binding (event) — listens to DOM events and calls a method\n④ Two-way Binding [(ngModel)] — syncs template ↔ component (requires FormsModule)",
+      "codeExample": "// Component\nexport class DemoComponent {\n  title = 'Angular';\n  color = 'red';\n  username = '';\n  onClick() { alert('clicked!'); }\n}\n\n// Template\n<h1>{{ title }}</h1>              <!-- ① Interpolation -->\n<p [style.color]=\"color\">Hi</p>  <!-- ② Property Binding -->\n<button (click)=\"onClick()\">     <!-- ③ Event Binding -->\n  Click me\n</button>\n<input [(ngModel)]=\"username\" /> <!-- ④ Two-way Binding -->\n<p>Hello, {{ username }}!</p>",
+      "relatedTopics": ["Components", "Forms", "Directives"],
+      "learnRoute": "/learn/data-binding"
+    },
+    {
+      "id": "directives",
+      "keywords": ["directive", "directives", "ngif", "ngfor", "structural directive", "attribute directive", "@if", "@for", "custom directive"],
+      "question": "What are Directives?",
+      "answer": "Directives extend HTML with custom behavior. Angular has 3 types:\n\n① Component directives — components ARE directives with a template\n② Structural directives — change the DOM structure (@if, @for, @switch)\n③ Attribute directives — change appearance/behavior of an element\n\nAngular 17+ uses the new control flow syntax (@if, @for) instead of *ngIf and *ngFor.",
+      "codeExample": "<!-- Angular 17+ new control flow (preferred) -->\n@if (isLoggedIn) {\n  <p>Welcome back!</p>\n} @else {\n  <p>Please log in.</p>\n}\n\n@for (item of items; track item.id) {\n  <li>{{ item.name }}</li>\n} @empty {\n  <li>No items found.</li>\n}\n\n<!-- Attribute directive -->\n<p [class.active]=\"isActive\">Toggle class</p>",
+      "relatedTopics": ["Components", "Templates", "Data Binding"],
+      "learnRoute": "/learn/directives"
+    },
+    {
+      "id": "lifecycle-hooks",
+      "keywords": ["lifecycle", "lifecycle hook", "oninit", "ngOnInit", "ondestroy", "ngondestroy", "onchanges", "afterviewinit", "hook"],
+      "question": "What are Lifecycle Hooks?",
+      "answer": "Lifecycle hooks are methods that Angular calls at specific stages of a component's life:\n\n• ngOnInit() — runs once after component is initialized (best for data loading)\n• ngOnChanges() — runs when input properties change\n• ngOnDestroy() — runs just before the component is destroyed (cleanup subscriptions)\n• ngAfterViewInit() — runs after the component's view is rendered\n• ngDoCheck() — runs on every change detection cycle\n\nWith Signals, many use-cases for lifecycle hooks are handled by effect() instead.",
+      "codeExample": "import { Component, OnInit, OnDestroy } from '@angular/core';\n\n@Component({ selector: 'app-demo', template: '' })\nexport class DemoComponent implements OnInit, OnDestroy {\n\n  ngOnInit(): void {\n    // ✅ Best place to load data, set up subscriptions\n    console.log('Component initialized!');\n  }\n\n  ngOnDestroy(): void {\n    // ✅ Cleanup: unsubscribe, clear timers\n    console.log('Component destroyed!');\n  }\n}",
+      "relatedTopics": ["Components", "Signals", "RxJS"],
+      "learnRoute": "/learn/components"
+    },
+    {
+      "id": "input-output",
+      "keywords": ["input", "output", "@input", "@output", "eventemitter", "input()", "output()", "parent child", "component communication"],
+      "question": "What is the difference between @Input and input()?",
+      "answer": "Both pass data from parent → child components, but input() is the modern signal-based API:\n\n@Input() (classic) — uses decorator, returns plain value\ninput() (Angular 17+) — returns a Signal, fully reactive\n\nSimilarly for outputs:\n@Output() + EventEmitter (classic)\noutput() (Angular 17+) — cleaner, no EventEmitter needed",
+      "codeExample": "// ✅ Modern approach (Angular 17+)\nimport { Component, input, output } from '@angular/core';\n\n@Component({ selector: 'app-child', template: '' })\nexport class ChildComponent {\n  // Signal-based input — required\n  name = input.required<string>();\n\n  // Signal-based output\n  greet = output<string>();\n\n  sendGreeting() {\n    this.greet.emit(`Hello from ${this.name()}!`);\n  }\n}\n\n// Parent template:\n// <app-child [name]=\"'Angular'\" (greet)=\"onGreet($event)\" />",
+      "relatedTopics": ["Components", "Signals", "Data Binding"],
+      "learnRoute": "/learn/components"
+    },
+    {
+      "id": "rxjs",
+      "keywords": ["rxjs", "observable", "subscribe", "operator", "pipe", "map", "filter", "subject", "behaviorsubject", "async pipe"],
+      "question": "What is RxJS?",
+      "answer": "RxJS (Reactive Extensions for JavaScript) is a library for reactive programming using Observables. Angular uses it extensively for handling async operations like HTTP calls, events, and routing.\n\nKey concepts:\n• Observable — a stream of values over time\n• Observer — subscribes to an Observable\n• Operators — transform streams (map, filter, switchMap, mergeMap, etc.)\n• Subject — both Observable and Observer; used for multicasting\n• async pipe — auto-subscribes in templates (auto-cleanup)",
+      "codeExample": "import { Observable, Subject } from 'rxjs';\nimport { map, filter, takeUntil } from 'rxjs/operators';\n\n// HTTP returns an Observable\nthis.http.get<User[]>('/api/users').pipe(\n  map(users => users.filter(u => u.active)),\n  takeUntil(this.destroy$)  // auto-unsubscribe\n).subscribe(users => this.users = users);\n\n// In template — async pipe handles subscribe/unsubscribe\n@Component({\n  template: `\n    @for (user of users$ | async; track user.id) {\n      <p>{{ user.name }}</p>\n    }\n  `\n})",
+      "relatedTopics": ["HTTP Client", "Services", "Signals"],
+      "learnRoute": "/learn/rxjs"
+    },
+    {
+      "id": "http",
+      "keywords": ["http", "httpclient", "api", "fetch", "get", "post", "put", "delete", "rest", "http request", "backend", "endpoint"],
+      "question": "How do I make HTTP requests in Angular?",
+      "answer": "Angular provides HttpClient for making HTTP requests. It returns Observables that you subscribe to.\n\nSetup: Add provideHttpClient() in app.config.ts\nUsage: inject HttpClient and call .get(), .post(), .put(), .delete()",
+      "codeExample": "// app.config.ts\nprovideHttpClient()\n\n// user.service.ts\nimport { Injectable, inject } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\n\n@Injectable({ providedIn: 'root' })\nexport class UserService {\n  private http = inject(HttpClient);\n  private url = 'https://api.example.com';\n\n  getUsers() {\n    return this.http.get<User[]>(`${this.url}/users`);\n  }\n\n  createUser(user: Partial<User>) {\n    return this.http.post<User>(`${this.url}/users`, user);\n  }\n}",
+      "relatedTopics": ["RxJS", "Services", "Observables"],
+      "learnRoute": "/learn/http"
+    },
+    {
+      "id": "standalone",
+      "keywords": ["standalone", "standalone component", "ngmodule", "module", "no module", "no ngmodule", "standalone: true"],
+      "question": "What is a Standalone Component?",
+      "answer": "Standalone components (default in Angular 17+) don't belong to an NgModule. They declare their own dependencies directly in the imports[] array of @Component.\n\nBenefits:\n• Simpler — no need to create or manage NgModules\n• More portable — self-contained and reusable\n• Better tree-shaking — only imports what it needs\n• Easier lazy loading — just use loadComponent()",
+      "codeExample": "// ✅ Standalone component (Angular 17+ default)\n@Component({\n  selector: 'app-profile',\n  standalone: true,          // this is now the default\n  imports: [\n    RouterLink,              // from @angular/router\n    NgClass,                 // from @angular/common\n    MyCardComponent,         // another standalone component\n    ReactiveFormsModule,     // from @angular/forms\n  ],\n  template: `...`,\n})\nexport class ProfileComponent {}",
+      "relatedTopics": ["Components", "NgModules", "Routing"],
+      "learnRoute": "/learn/basics"
+    },
+    {
+      "id": "forms-reactive",
+      "keywords": ["reactive forms", "formgroup", "formcontrol", "formbuilder", "validators", "reactive form"],
+      "question": "What are Reactive Forms?",
+      "answer": "Reactive Forms are the programmatic, model-driven approach to forms in Angular. You define the form structure in the component class using FormGroup and FormControl.\n\nAdvantages over Template-driven forms:\n• Full control in the component (testable)\n• Dynamic form fields\n• Complex validation logic\n• Better for large forms",
+      "codeExample": "import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';\n\n@Component({\n  imports: [ReactiveFormsModule],\n  template: `\n    <form [formGroup]=\"form\" (ngSubmit)=\"onSubmit()\">\n      <input formControlName=\"email\" />\n      <span *ngIf=\"form.get('email')?.invalid\">Invalid email</span>\n      <button type=\"submit\" [disabled]=\"form.invalid\">Submit</button>\n    </form>\n  `\n})\nexport class LoginComponent {\n  private fb = inject(FormBuilder);\n\n  form = this.fb.group({\n    email: ['', [Validators.required, Validators.email]],\n    password: ['', [Validators.required, Validators.minLength(8)]],\n  });\n\n  onSubmit() {\n    if (this.form.valid) console.log(this.form.value);\n  }\n}",
+      "relatedTopics": ["Template-driven Forms", "Validators", "Components"],
+      "learnRoute": "/learn/forms"
+    },
+    {
+      "id": "change-detection",
+      "keywords": ["change detection", "zone.js", "zoneless", "detectchanges", "changedetectionstrategy", "onpush"],
+      "question": "How does Angular Change Detection work?",
+      "answer": "Change Detection is Angular's mechanism for syncing the component's state with the DOM.\n\nDefault strategy: Angular checks ALL components on every event.\nOnPush strategy: Angular only checks a component if its @Input() references change, an event fires from the component, or an Observable emits.\n\nWith Signals (Angular 17+): Angular is moving toward signal-based, zoneless change detection — components only re-render when a signal they read changes. Much more efficient!",
+      "codeExample": "// OnPush — manual control (better performance)\nimport { ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  changeDetection: ChangeDetectionStrategy.OnPush,\n  template: `{{ data() }}`\n})\nexport class OptimizedComponent {\n  data = input<string>();  // OnPush + signals = ultra-fast\n}",
+      "relatedTopics": ["Signals", "Performance", "Zones"],
+      "learnRoute": "/learn/signals"
+    },
+    {
+      "id": "pipe",
+      "keywords": ["pipe", "pipes", "custom pipe", "transform", "date pipe", "async pipe", "uppercase", "currency"],
+      "question": "What are Pipes in Angular?",
+      "answer": "Pipes transform data for display in templates. Use them with the | operator.\n\nBuilt-in pipes: date, uppercase, lowercase, currency, percent, async, json, slice, keyvalue\n\nasync pipe: Automatically subscribes to an Observable or Promise and unsubscribes when the component is destroyed — very useful!",
+      "codeExample": "// Built-in pipes in templates\n<p>{{ today | date:'longDate' }}</p>          <!-- Feb 24, 2026 -->\n<p>{{ price | currency:'USD' }}</p>           <!-- $99.99 -->\n<p>{{ name | uppercase }}</p>                 <!-- ANGULAR -->\n<p>{{ data$ | async }}</p>                   <!-- auto-subscribe -->\n\n// Custom pipe\n@Pipe({ name: 'truncate', standalone: true })\nexport class TruncatePipe implements PipeTransform {\n  transform(value: string, limit = 50): string {\n    return value.length > limit\n      ? value.substring(0, limit) + '...'\n      : value;\n  }\n}",
+      "relatedTopics": ["Templates", "RxJS", "Components"],
+      "learnRoute": "/learn/components"
+    },
+    {
+      "id": "services",
+      "keywords": ["service", "services", "singleton", "shared state", "business logic", "@injectable"],
+      "question": "What is a Service and when should I use it?",
+      "answer": "A Service is a TypeScript class decorated with @Injectable that holds:\n• Shared business logic (calculations, transformations)\n• Shared state (user session, theme, cart)\n• API calls (HTTP requests)\n• Utilities used across multiple components\n\nRule of thumb: If more than one component needs it, put it in a service.",
+      "codeExample": "import { Injectable, signal } from '@angular/core';\n\n@Injectable({ providedIn: 'root' }) // singleton across whole app\nexport class CartService {\n  private items = signal<CartItem[]>([]);\n\n  // Read-only derived state\n  count = computed(() => this.items().length);\n  total = computed(() => this.items().reduce((s, i) => s + i.price, 0));\n\n  addItem(item: CartItem) {\n    this.items.update(list => [...list, item]);\n  }\n\n  removeItem(id: string) {\n    this.items.update(list => list.filter(i => i.id !== id));\n  }\n}",
+      "relatedTopics": ["Dependency Injection", "Signals", "HTTP"],
+      "learnRoute": "/learn/services"
+    },
+    {
+      "id": "viewchild",
+      "keywords": ["viewchild", "viewchildren", "elementref", "template reference", "#ref", "viewchild()"],
+      "question": "What is ViewChild?",
+      "answer": "ViewChild gives you direct access to a child component or DOM element from the parent component class.\n\nModern Angular 17+ uses viewChild() signal function instead of the @ViewChild() decorator.",
+      "codeExample": "import { viewChild, ElementRef, AfterViewInit } from '@angular/core';\n\n@Component({\n  template: `<input #myInput type=\"text\" />`\n})\nexport class DemoComponent implements AfterViewInit {\n  // Signal-based viewChild (Angular 17+)\n  inputRef = viewChild<ElementRef>('myInput');\n\n  ngAfterViewInit() {\n    // Access after view is rendered\n    this.inputRef()?.nativeElement.focus();\n  }\n}",
+      "relatedTopics": ["Components", "Lifecycle Hooks", "Directives"],
+      "learnRoute": "/learn/components"
+    },
+    {
+      "id": "route-guards",
+      "keywords": ["guard", "guards", "route guard", "auth guard", "caactivate", "canmatch", "protect route", "authentication"],
+      "question": "What are Route Guards?",
+      "answer": "Route Guards are functions that decide whether navigation to a route should be allowed. They are used for authentication, authorization, or preventing navigation when there are unsaved changes.\n\nModern Angular uses functional guards (plain functions) instead of class-based guards.",
+      "codeExample": "// Functional guard (modern approach)\nimport { inject } from '@angular/core';\nimport { Router } from '@angular/router';\nimport { AuthService } from './auth.service';\n\nexport const authGuard = () => {\n  const auth = inject(AuthService);\n  const router = inject(Router);\n\n  if (auth.isLoggedIn()) return true;\n\n  // Redirect to login\n  return router.createUrlTree(['/login']);\n};\n\n// In routes\n{ path: 'dashboard', canActivate: [authGuard], ... }",
+      "relatedTopics": ["Routing", "Services", "Authentication"],
+      "learnRoute": "/learn/routing"
+    },
+    {
+      "id": "template-syntax",
+      "keywords": ["template", "template syntax", "@if", "@for", "@switch", "control flow", "new syntax"],
+      "question": "What is the new Angular template syntax?",
+      "answer": "Angular 17+ introduced a new built-in control flow syntax using @if, @for, @switch — replacing *ngIf, *ngFor, and *ngSwitch directives. The new syntax is faster (no directive overhead) and cleaner to read.",
+      "codeExample": "<!-- ✅ New syntax (Angular 17+) -->\n@if (user) {\n  <h1>Welcome, {{ user.name }}</h1>\n} @else if (loading) {\n  <p>Loading...</p>\n} @else {\n  <a routerLink=\"/login\">Sign in</a>\n}\n\n@for (item of items; track item.id) {\n  <li>{{ item.name }}</li>\n} @empty {\n  <p>No items.</p>\n}\n\n@switch (status) {\n  @case ('active') { <span class=\"green\">Active</span> }\n  @case ('inactive') { <span class=\"red\">Inactive</span> }\n  @default { <span>Unknown</span> }\n}",
+      "relatedTopics": ["Directives", "Components", "Data Binding"],
+      "learnRoute": "/learn/directives"
+    },
+    {
+      "id": "lazy-loading",
+      "keywords": ["lazy loading", "lazy load", "loadcomponent", "loadchildren", "code splitting", "bundle"],
+      "question": "What is Lazy Loading?",
+      "answer": "Lazy Loading means a component or module is only downloaded when the user navigates to it, instead of loading everything upfront. This dramatically reduces the initial bundle size and speeds up the first load.\n\nIn Angular, you use loadComponent() for standalone components or loadChildren() for routes arrays.",
+      "codeExample": "// ✅ Lazy load a standalone component\n{\n  path: 'dashboard',\n  loadComponent: () =>\n    import('./dashboard/dashboard.component')\n      .then(m => m.DashboardComponent),\n}\n\n// ✅ Lazy load a whole feature's routes\n{\n  path: 'admin',\n  loadChildren: () =>\n    import('./admin/admin.routes')\n      .then(m => m.adminRoutes),\n}",
+      "relatedTopics": ["Routing", "Performance", "Modules"],
+      "learnRoute": "/learn/routing"
+    },
+    {
+      "id": "best-practices",
+      "keywords": ["best practice", "best practices", "clean code", "architecture", "folder structure", "tips"],
+      "question": "What are Angular best practices?",
+      "answer": "Key Angular best practices:\n\n① Use standalone components (no NgModules)\n② Use signal-based state (signal, computed, effect)\n③ Use inject() instead of constructor injection\n④ Lazy load all feature routes with loadComponent()\n⑤ Use OnPush change detection for performance\n⑥ Keep components small — extract logic into services\n⑦ Use the async pipe in templates to avoid manual subscriptions\n⑧ Feature-based folder structure (not type-based)\n⑨ Use TypeScript strict mode\n⑩ Write unit tests for services and components",
+      "codeExample": "// ✅ Feature-based folder structure\nsrc/app/\n├── core/              // singleton services, guards, interceptors\n│   ├── services/\n│   └── guards/\n├── features/          // one folder per page/feature\n│   ├── home/\n│   ├── dashboard/\n│   └── profile/\n└── shared/            // reusable components, pipes, directives\n    ├── components/\n    ├── pipes/\n    └── models/",
+      "relatedTopics": ["Architecture", "Performance", "Testing"],
+      "learnRoute": "/learn/best-practices"
+    }
+  ]
+}

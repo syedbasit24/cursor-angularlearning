@@ -1,0 +1,176 @@
+{
+  "id": "services",
+  "title": "Services & Dependency Injection",
+  "subtitle": "Share logic and state across your entire application",
+  "description": "Learn how Angular services centralise business logic and shared state, and how Dependency Injection (DI) automatically provides them to any component or other service that needs them.",
+  "icon": "⚙️",
+  "xp": 150,
+  "difficulty": "Intermediate",
+  "estimatedTime": "35 min",
+  "prevLesson": { "id": "directives", "title": "Directives", "route": "/learn/directives" },
+  "nextLesson": { "id": "routing", "title": "Routing", "route": "/learn/routing" },
+  "keyPoints": [
+    "A service is a plain TypeScript class decorated with @Injectable that holds reusable logic or shared state",
+    "providedIn: 'root' creates a single shared instance (singleton) available app-wide",
+    "inject() is the modern way to get a service — use it instead of constructor injection",
+    "Signals inside services make state reactive — any component reading a signal auto-updates when it changes",
+    "Angular's DI system creates and manages service instances — you never call new MyService() yourself",
+    "Services can inject other services, enabling composable, layered architecture",
+    "Providing a service at component level creates a new instance scoped to that component tree"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "The Problem Services Solve",
+      "content": "Imagine you have a shopping cart. Without services, every component that needs the cart data would have to manage its own copy — the header showing item count, the cart page showing items, and the checkout page showing the total would all hold separate data that quickly gets out of sync.\n\nServices solve this by creating a single source of truth. One CartService holds the cart data, and every component that needs it simply asks Angular for the same shared instance. When the service data changes, every component reading from it updates automatically — especially when using Signals.\n\nBeyond shared state, services are also the right place for:\n• HTTP calls and API communication\n• Business logic (calculations, transformations)\n• Authentication and authorisation\n• Caching and local storage\n• Logging and analytics"
+    },
+    {
+      "type": "diagram",
+      "title": "Services as a Single Source of Truth",
+      "svg": "<svg viewBox='0 0 640 300' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='300' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>SERVICE AS SINGLE SOURCE OF TRUTH</text><rect x='240' y='44' width='160' height='56' rx='10' fill='#DD0031' opacity='0.15'/><rect x='240' y='44' width='160' height='56' rx='10' fill='none' stroke='#DD0031' stroke-width='2'/><text x='320' y='68' text-anchor='middle' fill='#DD0031' font-size='13' font-weight='700'>CartService</text><text x='320' y='86' text-anchor='middle' fill='#94a3b8' font-size='10'>items = signal([...])</text><line x1='320' y1='100' x2='120' y2='150' stroke='#334155' stroke-width='1.5' stroke-dasharray='5,3'/><line x1='320' y1='100' x2='320' y2='150' stroke='#334155' stroke-width='1.5' stroke-dasharray='5,3'/><line x1='320' y1='100' x2='520' y2='150' stroke='#334155' stroke-width='1.5' stroke-dasharray='5,3'/><rect x='40' y='150' width='160' height='56' rx='10' fill='#1e3a5f' opacity='0.5'/><rect x='40' y='150' width='160' height='56' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='120' y='174' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='600'>HeaderComponent</text><text x='120' y='192' text-anchor='middle' fill='#94a3b8' font-size='10'>Shows item count</text><rect x='240' y='150' width='160' height='56' rx='10' fill='#1e3a5f' opacity='0.5'/><rect x='240' y='150' width='160' height='56' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='320' y='174' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='600'>CartPageComponent</text><text x='320' y='192' text-anchor='middle' fill='#94a3b8' font-size='10'>Shows all items</text><rect x='440' y='150' width='160' height='56' rx='10' fill='#1e3a5f' opacity='0.5'/><rect x='440' y='150' width='160' height='56' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='520' y='174' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='600'>CheckoutComponent</text><text x='520' y='192' text-anchor='middle' fill='#94a3b8' font-size='10'>Shows total price</text><rect x='100' y='236' width='440' height='36' rx='8' fill='#1e293b'/><text x='320' y='255' text-anchor='middle' fill='#64748b' font-size='11'>All three inject the SAME CartService instance — one change updates everywhere</text><text x='120' y='220' text-anchor='middle' fill='#3b82f6' font-size='9'>inject(CartService)</text><text x='320' y='220' text-anchor='middle' fill='#3b82f6' font-size='9'>inject(CartService)</text><text x='520' y='220' text-anchor='middle' fill='#3b82f6' font-size='9'>inject(CartService)</text></svg>",
+      "caption": "All components inject the same CartService singleton. One cart.add() call automatically updates the item count in the header, the list in the cart page, and the total in checkout."
+    },
+    {
+      "type": "text",
+      "title": "Creating a Service with @Injectable",
+      "content": "A service is a TypeScript class decorated with @Injectable. The decorator tells Angular's DI system that this class can be injected into other classes.\n\nThe most important option is providedIn:\n• providedIn: 'root'  — registers the service with the root injector. One singleton instance is created for the entire app and shared everywhere. This is the default and recommended option for most services.\n• providedIn: 'any'   — creates a new instance for each lazy-loaded module.\n• No providedIn       — the service must be manually added to a component's or module's providers array (creates a new instance per component tree).\n\nWith providedIn: 'root', the service is also tree-shakable — if nothing injects it, Angular removes it from the production bundle automatically."
+    },
+    {
+      "type": "code",
+      "title": "Your First Service",
+      "filename": "counter.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, signal, computed } from '@angular/core';\n\n/**\n * CounterService — a simple service demonstrating:\n *  - @Injectable decorator\n *  - providedIn: 'root' for app-wide singleton\n *  - signal() for reactive shared state\n *  - computed() for derived state\n *  - Public methods as the API surface\n */\n@Injectable({\n  providedIn: 'root',   // singleton — one instance for the whole app\n})\nexport class CounterService {\n  // Private signal — only this service can write to it\n  private _count = signal(0);\n\n  // Public read-only signal — components read but cannot mutate directly\n  readonly count   = this._count.asReadonly();\n  readonly doubled = computed(() => this._count() * 2);\n  readonly isZero  = computed(() => this._count() === 0);\n\n  // Public API — the only way to change the state\n  increment(): void { this._count.update(n => n + 1); }\n  decrement(): void { this._count.update(n => n - 1); }\n  reset():     void { this._count.set(0); }\n  addBy(n: number): void { this._count.update(c => c + n); }\n}",
+      "explanation": "Making _count private and exposing asReadonly() prevents components from bypassing the service API and mutating state directly. Components can read count() but cannot call count.set() — all mutations go through the service methods."
+    },
+    {
+      "type": "text",
+      "title": "inject() — The Modern Way to Use Services",
+      "content": "Angular 14+ introduced the inject() function as the recommended way to get a service inside a component, directive, pipe, or another service.\n\nYou call inject() at the class field level (or in a constructor, or in a factory function) — it reads from the current injection context automatically.\n\nWhy prefer inject() over constructor injection?\n• Cleaner — no constructor boilerplate when you have multiple dependencies\n• Works anywhere in the injection context (class fields, factory functions, guards)\n• Easier to read — each dependency is declared on its own line\n• Better with inheritance — no need to pass dependencies to super()\n• The Angular team recommends it for all new code"
+    },
+    {
+      "type": "code",
+      "title": "inject() vs Constructor Injection",
+      "filename": "dashboard.component.ts",
+      "language": "typescript",
+      "code": "import { Component, inject, computed } from '@angular/core';\nimport { CounterService } from './counter.service';\nimport { UserService }    from './user.service';\nimport { ThemeService }   from './theme.service';\n\n// ── ✓ Modern: inject() at field level ────────────────────\n@Component({\n  selector: 'app-dashboard',\n  standalone: true,\n  template: `\n    <h1>Welcome, {{ user.name() }}</h1>\n    <p>Count: {{ counter.count() }}</p>\n    <p>Theme: {{ theme.isDark() ? 'Dark' : 'Light' }}</p>\n  `,\n})\nexport class DashboardComponent {\n  // Each dependency on its own line — readable, no constructor needed\n  counter = inject(CounterService);\n  user    = inject(UserService);\n  theme   = inject(ThemeService);\n\n  // Can use injected services immediately in computed()\n  summary = computed(() =>\n    `${this.user.name()} has count ${this.counter.count()}`\n  );\n}\n\n// ── Old style: constructor injection (still works) ────────\n@Component({ selector: 'app-old', standalone: true, template: '' })\nexport class OldStyleComponent {\n  // Gets verbose with many dependencies\n  constructor(\n    private counter: CounterService,\n    private user:    UserService,\n    private theme:   ThemeService,\n  ) {}\n}\n\n// ── Both result in exactly the same behaviour ─────────────\n// Angular's DI system provides the same singleton instance either way.",
+      "explanation": "With inject(), you can skip writing a constructor entirely unless you have other initialisation logic. The injected services are available immediately as class properties."
+    },
+    {
+      "type": "text",
+      "title": "Building a Real Service — With Signals and HTTP",
+      "content": "A production service typically combines:\n• Signals for reactive state (loading, data, error)\n• HttpClient for API calls\n• Methods that update the signal state\n• computed() for derived data\n\nThis pattern gives you a fully reactive data layer. Components just read the signals and their templates update automatically — no manual change detection, no .subscribe() in components."
+    },
+    {
+      "type": "code",
+      "title": "A Complete UserService",
+      "filename": "user.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, signal, computed, inject } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\nimport { catchError, EMPTY } from 'rxjs';\n\nexport interface User {\n  id:     number;\n  name:   string;\n  email:  string;\n  role:   'admin' | 'user' | 'guest';\n}\n\n@Injectable({ providedIn: 'root' })\nexport class UserService {\n  private http = inject(HttpClient);  // inject another service inside a service!\n\n  // ── State signals (private write, public read) ─────────\n  private _users     = signal<User[]>([]);\n  private _loading   = signal(false);\n  private _error     = signal<string | null>(null);\n  private _currentId = signal<number | null>(null);\n\n  // ── Public read-only access ────────────────────────────\n  readonly users    = this._users.asReadonly();\n  readonly loading  = this._loading.asReadonly();\n  readonly error    = this._error.asReadonly();\n\n  // ── Derived / computed signals ─────────────────────────\n  readonly count      = computed(() => this._users().length);\n  readonly admins     = computed(() => this._users().filter(u => u.role === 'admin'));\n  readonly current    = computed(() =>\n    this._users().find(u => u.id === this._currentId()) ?? null\n  );\n  readonly hasError   = computed(() => this._error() !== null);\n\n  // ── Methods (the public API) ───────────────────────────\n  loadUsers(): void {\n    this._loading.set(true);\n    this._error.set(null);\n\n    this.http.get<User[]>('https://jsonplaceholder.typicode.com/users')\n      .pipe(\n        catchError(err => {\n          this._error.set('Failed to load users: ' + err.message);\n          this._loading.set(false);\n          return EMPTY;\n        })\n      )\n      .subscribe(users => {\n        this._users.set(users);\n        this._loading.set(false);\n      });\n  }\n\n  selectUser(id: number): void {\n    this._currentId.set(id);\n  }\n\n  addUser(user: Omit<User, 'id'>): void {\n    const newUser = { ...user, id: Date.now() };\n    this._users.update(list => [...list, newUser]);\n  }\n\n  removeUser(id: number): void {\n    this._users.update(list => list.filter(u => u.id !== id));\n  }\n}",
+      "explanation": "Services can inject other services using inject() — here UserService injects HttpClient. The private/readonly pattern keeps the state encapsulated: components can read signals but all mutations go through the service methods."
+    },
+    {
+      "type": "code",
+      "title": "Using the UserService in a Component",
+      "filename": "users-page.component.ts",
+      "language": "typescript",
+      "code": "import { Component, inject, OnInit } from '@angular/core';\nimport { UserService } from './user.service';\n\n@Component({\n  selector: 'app-users-page',\n  standalone: true,\n  template: `\n    <h1>Users ({{ userService.count() }})</h1>\n\n    <!-- Read signals directly in the template -->\n    @if (userService.loading()) {\n      <p>Loading...</p>\n    } @else if (userService.hasError()) {\n      <p class=\"error\">{{ userService.error() }}</p>\n      <button (click)=\"userService.loadUsers()\">Retry</button>\n    } @else {\n      @for (user of userService.users(); track user.id) {\n        <div (click)=\"userService.selectUser(user.id)\">\n          <strong>{{ user.name }}</strong> — {{ user.role }}\n          <button (click)=\"userService.removeUser(user.id)\">Remove</button>\n        </div>\n      } @empty {\n        <p>No users loaded yet.</p>\n      }\n    }\n\n    <!-- Selected user detail -->\n    @if (userService.current(); as user) {\n      <div class=\"detail\">\n        <h2>{{ user.name }}</h2>\n        <p>{{ user.email }}</p>\n      </div>\n    }\n  `,\n})\nexport class UsersPageComponent implements OnInit {\n  userService = inject(UserService);\n\n  ngOnInit(): void {\n    this.userService.loadUsers();   // trigger the HTTP call\n  }\n}\n\n// Note: HeaderComponent can ALSO inject UserService and read\n// userService.count() — it will show the SAME data, automatically\n// updated, because it is the same singleton instance.",
+      "explanation": "The component is very thin — it just reads signals and calls service methods. All logic lives in the service. This makes the component easy to test and the logic reusable."
+    },
+    {
+      "type": "tip",
+      "content": "Keep components 'dumb' and services 'smart'. A component should only read signals and call service methods — it should never contain if/else business logic, HTTP calls, or data transformation. If you find yourself writing complex logic in a component, move it to a service."
+    },
+    {
+      "type": "text",
+      "title": "Services Injecting Services",
+      "content": "Services can depend on other services — just use inject() inside the service class body. Angular's DI system handles the entire dependency graph for you.\n\nCommon patterns:\n• A CartService injecting UserService (to know which user's cart to load)\n• A NotificationService injecting HttpClient and AuthService\n• A LoggerService injected by many other services\n\nAngular resolves the entire graph at startup, detecting any circular dependencies (A → B → A) and throwing a clear error."
+    },
+    {
+      "type": "code",
+      "title": "Service Depending on Another Service",
+      "filename": "cart.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, signal, computed, inject, effect } from '@angular/core';\nimport { UserService } from './user.service';\nimport { HttpClient }  from '@angular/common/http';\n\nexport interface CartItem {\n  productId: number;\n  name:      string;\n  price:     number;\n  qty:       number;\n}\n\n@Injectable({ providedIn: 'root' })\nexport class CartService {\n  // Inject another service and HttpClient\n  private userService = inject(UserService);\n  private http        = inject(HttpClient);\n\n  private _items = signal<CartItem[]>([]);\n\n  readonly items      = this._items.asReadonly();\n  readonly itemCount  = computed(() =>\n    this._items().reduce((sum, i) => sum + i.qty, 0)\n  );\n  readonly total      = computed(() =>\n    this._items().reduce((sum, i) => sum + i.price * i.qty, 0)\n  );\n  readonly isEmpty    = computed(() => this._items().length === 0);\n\n  constructor() {\n    // effect() — reload cart when user changes\n    effect(() => {\n      const user = this.userService.current();\n      if (user) this.loadCart(user.id);\n      else      this._items.set([]);   // clear on logout\n    });\n  }\n\n  addItem(item: CartItem): void {\n    this._items.update(list => {\n      const existing = list.find(i => i.productId === item.productId);\n      if (existing) {\n        return list.map(i =>\n          i.productId === item.productId\n            ? { ...i, qty: i.qty + 1 }\n            : i\n        );\n      }\n      return [...list, { ...item, qty: 1 }];\n    });\n  }\n\n  removeItem(productId: number): void {\n    this._items.update(list => list.filter(i => i.productId !== productId));\n  }\n\n  clear(): void { this._items.set([]); }\n\n  private loadCart(userId: number): void {\n    // Load saved cart for this user\n    this.http.get<CartItem[]>(`/api/cart/${userId}`)\n      .subscribe(items => this._items.set(items));\n  }\n}",
+      "explanation": "effect() inside the service constructor runs whenever userService.current() changes — so the cart automatically reloads when the user logs in or switches account. This is reactive programming at the service layer."
+    },
+    {
+      "type": "text",
+      "title": "Injection Hierarchy — Where Services Live",
+      "content": "Angular has a tree of injectors that mirrors the component tree. When a component requests a service, Angular walks UP the injector tree until it finds a provider.\n\nThree injection levels:\n\n① Root injector (providedIn: 'root') — one singleton for the entire app. This is what you use 95% of the time.\n\n② Component injector (providers: [...] in @Component) — a new instance created for this component and all its children. Destroyed when the component is destroyed. Use this when different parts of the app need isolated instances (e.g., a reusable form component that shouldn't share state).\n\n③ Route-level providers — a new instance per lazy-loaded route. Useful for per-page state."
+    },
+    {
+      "type": "diagram",
+      "title": "Angular's Injector Hierarchy",
+      "svg": "<svg viewBox='0 0 640 340' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='340' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>ANGULAR INJECTOR HIERARCHY</text><rect x='190' y='38' width='260' height='50' rx='10' fill='#DD0031' opacity='0.15'/><rect x='190' y='38' width='260' height='50' rx='10' fill='none' stroke='#DD0031' stroke-width='2'/><text x='320' y='60' text-anchor='middle' fill='#DD0031' font-size='13' font-weight='700'>Root Injector</text><text x='320' y='78' text-anchor='middle' fill='#94a3b8' font-size='10'>providedIn: root — ONE instance for whole app</text><line x1='320' y1='88' x2='160' y2='128' stroke='#334155' stroke-width='1.5'/><line x1='320' y1='88' x2='480' y2='128' stroke='#334155' stroke-width='1.5'/><rect x='60' y='128' width='200' height='50' rx='10' fill='#1e3a5f' opacity='0.5'/><rect x='60' y='128' width='200' height='50' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='160' y='150' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='600'>ShellComponent</text><text x='160' y='165' text-anchor='middle' fill='#94a3b8' font-size='10'>inherits from Root injector</text><rect x='380' y='128' width='200' height='50' rx='10' fill='#065f46' opacity='0.2'/><rect x='380' y='128' width='200' height='50' rx='10' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='480' y='150' text-anchor='middle' fill='#34d399' font-size='12' font-weight='600'>FormComponent</text><text x='480' y='166' text-anchor='middle' fill='#94a3b8' font-size='9'>providers: [FormStateService]</text><text x='480' y='178' text-anchor='middle' fill='#f59e0b' font-size='9'>⬆ NEW isolated instance</text><line x1='160' y1='178' x2='120' y2='218' stroke='#334155' stroke-width='1.5'/><line x1='160' y1='178' x2='200' y2='218' stroke='#334155' stroke-width='1.5'/><rect x='50' y='218' width='140' height='44' rx='8' fill='#1e293b'/><rect x='50' y='218' width='140' height='44' rx='8' fill='none' stroke='#475569' stroke-width='1'/><text x='120' y='238' text-anchor='middle' fill='#94a3b8' font-size='11'>SidebarComponent</text><text x='120' y='252' text-anchor='middle' fill='#64748b' font-size='10'>uses Root services</text><rect x='130' y='218' width='140' height='44' rx='8' fill='#1e293b'/><rect x='130' y='218' width='140' height='44' rx='8' fill='none' stroke='#475569' stroke-width='1'/><text x='200' y='238' text-anchor='middle' fill='#94a3b8' font-size='11'>ContentComponent</text><text x='200' y='252' text-anchor='middle' fill='#64748b' font-size='10'>uses Root services</text><line x1='480' y1='178' x2='420' y2='218' stroke='#334155' stroke-width='1.5'/><line x1='480' y1='178' x2='540' y2='218' stroke='#334155' stroke-width='1.5'/><rect x='350' y='218' width='130' height='44' rx='8' fill='#065f46' opacity='0.15'/><rect x='350' y='218' width='130' height='44' rx='8' fill='none' stroke='#10b981' stroke-width='1'/><text x='415' y='238' text-anchor='middle' fill='#34d399' font-size='10'>InputFieldComponent</text><text x='415' y='252' text-anchor='middle' fill='#64748b' font-size='9'>gets FormStateService</text><rect x='490' y='218' width='130' height='44' rx='8' fill='#065f46' opacity='0.15'/><rect x='490' y='218' width='130' height='44' rx='8' fill='none' stroke='#10b981' stroke-width='1'/><text x='555' y='238' text-anchor='middle' fill='#34d399' font-size='10'>SubmitComponent</text><text x='555' y='252' text-anchor='middle' fill='#64748b' font-size='9'>gets FormStateService</text><rect x='50' y='285' width='540' height='40' rx='8' fill='#1e293b'/><text x='320' y='304' text-anchor='middle' fill='#64748b' font-size='10'>Two FormComponent instances → two separate FormStateService instances → isolated state ✓</text><text x='320' y='318' text-anchor='middle' fill='#475569' font-size='10'>Root services (AuthService, CartService...) → same singleton in all components ✓</text></svg>",
+      "caption": "Components with providers:[] get their own service instance. Their children share that instance. Components without providers:[] inherit from the parent injector, all the way up to Root."
+    },
+    {
+      "type": "code",
+      "title": "Component-Level Service Providers",
+      "filename": "wizard.component.ts",
+      "language": "typescript",
+      "code": "import { Injectable, Component, signal, inject } from '@angular/core';\n\n// ── Service with no providedIn ────────────────────────────\n// Must be explicitly provided — not a global singleton\n@Injectable()\nexport class WizardStateService {\n  currentStep = signal(1);\n  totalSteps  = signal(5);\n  formData    = signal<Record<string, unknown>>({});\n\n  next(): void { this.currentStep.update(s => Math.min(s + 1, this.totalSteps())); }\n  back(): void { this.currentStep.update(s => Math.max(s - 1, 1)); }\n  saveStep(data: Record<string, unknown>): void {\n    this.formData.update(d => ({ ...d, ...data }));\n  }\n}\n\n// ── Parent component PROVIDES the service ────────────────\n@Component({\n  selector: 'app-wizard',\n  standalone: true,\n  imports: [/* WizardStep1, WizardStep2 ... */],\n  // providers:[] creates a NEW instance for this component + children\n  providers: [WizardStateService],\n  template: `\n    <div class=\"wizard\">\n      <p>Step {{ state.currentStep() }} of {{ state.totalSteps() }}</p>\n      <!-- child step components also get this same WizardStateService instance -->\n    </div>\n  `,\n})\nexport class WizardComponent {\n  state = inject(WizardStateService);  // gets the instance from providers:[]\n}\n\n// ── If you render TWO wizards, each gets its OWN WizardStateService ──\n// <app-wizard />   ← isolated state\n// <app-wizard />   ← completely separate isolated state",
+      "explanation": "This is the 'component providers' pattern — perfect for reusable components like wizards, multi-step forms, and data grids that must not share state between instances."
+    },
+    {
+      "type": "text",
+      "title": "The InjectionToken — Injecting Non-Class Values",
+      "content": "Sometimes you need to inject a plain value — a configuration object, an API URL, a feature flag — not a class. For this, Angular provides InjectionToken.\n\nInjectionToken creates a unique key that the DI system uses to look up non-class values. You provide the value in the app config (or a component's providers array), and inject it using inject(TOKEN)."
+    },
+    {
+      "type": "code",
+      "title": "InjectionToken for Configuration",
+      "filename": "app.config.ts",
+      "language": "typescript",
+      "code": "import { InjectionToken, inject } from '@angular/core';\n\n// ── Define the token ──────────────────────────────────────\nexport interface AppConfig {\n  apiUrl:      string;\n  maxPageSize: number;\n  featureFlags: { darkMode: boolean; aiHelp: boolean };\n}\n\nexport const APP_CONFIG = new InjectionToken<AppConfig>('AppConfig');\n\n// ── Provide it in app.config.ts (or bootstrapApplication) ─\n// providers: [\n//   {\n//     provide:  APP_CONFIG,\n//     useValue: {\n//       apiUrl:      'https://api.myapp.com',\n//       maxPageSize: 20,\n//       featureFlags: { darkMode: true, aiHelp: false },\n//     },\n//   }\n// ]\n\n// ── Inject anywhere with inject() ─────────────────────────\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-settings',\n  standalone: true,\n  template: `<p>API: {{ config.apiUrl }}</p>`,\n})\nexport class SettingsComponent {\n  config = inject(APP_CONFIG);\n}",
+      "explanation": "InjectionToken is also used to inject browser APIs safely: new InjectionToken('Window', { factory: () => window }) lets you swap out the window object in tests with a mock."
+    },
+    {
+      "type": "note",
+      "content": "In unit tests, you can replace any injected service with a mock using the TestBed providers array: { provide: UserService, useValue: mockUserService }. This is one of the biggest benefits of DI — your components are fully decoupled from their dependencies, making them straightforward to test in isolation."
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "What is a service in Angular and why do we use them?",
+      "a": "A service is a TypeScript class decorated with @Injectable that holds reusable logic, shared state, or external communication (like HTTP calls). We use services to avoid duplicating logic across components, to create a single source of truth for shared data, and to keep components thin and focused purely on the UI. Services are the right place for HTTP calls, business logic, caching, and state management."
+    },
+    {
+      "q": "What does providedIn: 'root' do?",
+      "a": "It registers the service with Angular's root injector, creating a single shared instance (singleton) that is available to every component, directive, and service in the entire application. It is also tree-shakable — if nothing injects the service, Angular removes it from the production bundle. This is the recommended default for most services."
+    },
+    {
+      "q": "What is the difference between inject() and constructor injection? Which is preferred?",
+      "a": "Both request a dependency from Angular's DI system and produce the same result. Constructor injection uses TypeScript constructor parameters: constructor(private svc: MyService) {}. inject() is called at class field level: svc = inject(MyService). inject() is the modern recommended approach because it avoids constructor boilerplate when there are many dependencies, works in more contexts (factory functions, guards, class fields), and handles inheritance more cleanly without needing super() calls."
+    },
+    {
+      "q": "What is a singleton service and when would you NOT want a singleton?",
+      "a": "A singleton service (providedIn: 'root') has only one instance shared across the entire app — all components get the same object and the same state. You would NOT want a singleton when different parts of the app need isolated state — for example, a reusable multi-step wizard component where each wizard instance needs its own step counter. In that case, provide the service in the component's providers: [] array to create a new instance per component."
+    },
+    {
+      "q": "How do you make service state reactive with Signals?",
+      "a": "Declare private signal fields inside the service: private _items = signal<Item[]>([]). Expose them as read-only using asReadonly(): readonly items = this._items.asReadonly(). Use computed() for derived state: readonly count = computed(() => this._items().length). Components reading these signals in their templates will automatically re-render when the signal values change — no manual subscriptions or change detection calls needed."
+    },
+    {
+      "q": "Can a service inject another service? Give an example.",
+      "a": "Yes. Use inject() inside the service class: private http = inject(HttpClient). For example, a CartService can inject UserService to know which user's cart to load, and inject HttpClient to make API calls. Angular resolves the entire dependency graph at startup. If there is a circular dependency (A injects B which injects A), Angular throws a clear error at bootstrap time."
+    },
+    {
+      "q": "What is the Angular injector hierarchy and how does it affect service instances?",
+      "a": "Angular has a tree of injectors matching the component tree. When a component requests a service, Angular walks up the tree until it finds a provider. At the top is the Root injector (providedIn: 'root') — one instance for all. A component can have its own providers: [] array, creating a new service instance for that component and all its children, isolated from the rest of the app. Route-level lazy loading creates another level, providing services scoped to a route."
+    },
+    {
+      "q": "What is an InjectionToken and when do you need one?",
+      "a": "An InjectionToken is a typed key used to inject non-class values into the DI system — configuration objects, primitive values, API URLs, or browser APIs. You create it with new InjectionToken<Type>('description'), provide its value in a providers array with useValue or useFactory, and inject it with inject(MY_TOKEN). It is also used to safely inject browser globals like window or document so they can be replaced with mocks in unit tests."
+    },
+    {
+      "q": "How would you use a service to handle an HTTP call with loading and error states?",
+      "a": "Declare three signals: private _data = signal<T[]>([]), private _loading = signal(false), private _error = signal<string|null>(null). In the load method, set _loading to true and _error to null, call http.get() and subscribe. On success, set _data and _loading to false. On error (using catchError), set _error and _loading to false. Expose all three as readonly signals. Components read loading(), error(), and data() signals directly in their templates with @if blocks for each state."
+    },
+    {
+      "q": "Why is it beneficial that services are testable via DI?",
+      "a": "Because components receive services through injection rather than creating them with new, you can replace real services with mock objects in unit tests using TestBed: { provide: UserService, useValue: { users: signal([...]), loadUsers: jest.fn() } }. This means you can test a component in complete isolation, controlling exactly what data the service returns, without making real HTTP calls or having any database. It makes tests fast, deterministic, and focused on component behaviour only."
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "id": "directives",
+  "title": "Directives",
+  "subtitle": "Supercharge your templates with Angular's control flow and custom behaviour",
+  "description": "Learn Angular's powerful directive system — the new @if, @for, @switch control flow syntax, built-in attribute directives NgClass and NgStyle, and how to build your own custom directives.",
+  "icon": "🎯",
+  "xp": 130,
+  "difficulty": "Intermediate",
+  "estimatedTime": "30 min",
+  "prevLesson": { "id": "data-binding", "title": "Data Binding", "route": "/learn/data-binding" },
+  "nextLesson": { "id": "services", "title": "Services & DI", "route": "/learn/services" },
+  "keyPoints": [
+    "Directives are classes that add behaviour to DOM elements — they extend what HTML can do",
+    "Angular 17+ introduced built-in @if, @for, @switch control flow — replacing *ngIf and *ngFor",
+    "@for requires a track expression for efficient DOM updates — always use a unique identifier",
+    "@if / @else if / @else replaces *ngIf and the ngIf + else template pattern",
+    "@switch / @case replaces chains of *ngIf for multiple conditions",
+    "NgClass and NgStyle are attribute directives for dynamic CSS classes and inline styles",
+    "Custom attribute directives use @Directive, HostListener, and HostBinding to add reusable behaviour"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "What Are Directives?",
+      "content": "A directive is a class decorated with @Directive that adds behaviour to a DOM element. Technically, components are directives too — they are directives with a template attached.\n\nThere are three categories of directives:\n\n① Structural directives — change the DOM structure by adding or removing elements (@if, @for, @switch, *ngIf, *ngFor)\n② Attribute directives — change the appearance or behaviour of an existing element without altering the DOM structure (NgClass, NgStyle, custom directives)\n③ Component directives — directives with a template (i.e., every @Component is a directive)\n\nAngular 17 introduced a built-in control flow syntax (@if, @for, @switch) that replaces the old *ngIf and *ngFor structural directives. The new syntax is faster, more readable, and requires no additional imports."
+    },
+    {
+      "type": "diagram",
+      "title": "Three Types of Directives",
+      "svg": "<svg viewBox='0 0 640 260' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='260' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>THREE TYPES OF DIRECTIVES</text><rect x='30' y='44' width='180' height='190' rx='12' fill='#DD0031' opacity='0.1'/><rect x='30' y='44' width='180' height='190' rx='12' fill='none' stroke='#DD0031' stroke-width='1.5'/><text x='120' y='70' text-anchor='middle' fill='#DD0031' font-size='13' font-weight='700'>① Structural</text><text x='120' y='88' text-anchor='middle' fill='#94a3b8' font-size='10'>Changes the DOM structure</text><rect x='50' y='100' width='140' height='24' rx='5' fill='#1e293b'/><text x='120' y='116' text-anchor='middle' fill='#fca5a5' font-size='11' font-family='monospace'>@if / @else</text><rect x='50' y='130' width='140' height='24' rx='5' fill='#1e293b'/><text x='120' y='146' text-anchor='middle' fill='#fca5a5' font-size='11' font-family='monospace'>@for (track)</text><rect x='50' y='160' width='140' height='24' rx='5' fill='#1e293b'/><text x='120' y='176' text-anchor='middle' fill='#fca5a5' font-size='11' font-family='monospace'>@switch / @case</text><rect x='50' y='190' width='140' height='24' rx='5' fill='#1e293b'/><text x='120' y='206' text-anchor='middle' fill='#64748b' font-size='11' font-family='monospace'>*ngIf, *ngFor (old)</text><rect x='230' y='44' width='180' height='190' rx='12' fill='#3b82f6' opacity='0.1'/><rect x='230' y='44' width='180' height='190' rx='12' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='320' y='70' text-anchor='middle' fill='#60a5fa' font-size='13' font-weight='700'>② Attribute</text><text x='320' y='88' text-anchor='middle' fill='#94a3b8' font-size='10'>Modifies existing element</text><rect x='250' y='100' width='140' height='24' rx='5' fill='#1e293b'/><text x='320' y='116' text-anchor='middle' fill='#93c5fd' font-size='11' font-family='monospace'>NgClass</text><rect x='250' y='130' width='140' height='24' rx='5' fill='#1e293b'/><text x='320' y='146' text-anchor='middle' fill='#93c5fd' font-size='11' font-family='monospace'>NgStyle</text><rect x='250' y='160' width='140' height='24' rx='5' fill='#1e293b'/><text x='320' y='176' text-anchor='middle' fill='#93c5fd' font-size='11' font-family='monospace'>Custom directives</text><rect x='250' y='190' width='140' height='24' rx='5' fill='#1e293b'/><text x='320' y='206' text-anchor='middle' fill='#93c5fd' font-size='11' font-family='monospace'>RouterLinkActive</text><rect x='430' y='44' width='180' height='190' rx='12' fill='#10b981' opacity='0.1'/><rect x='430' y='44' width='180' height='190' rx='12' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='520' y='70' text-anchor='middle' fill='#34d399' font-size='13' font-weight='700'>③ Component</text><text x='520' y='88' text-anchor='middle' fill='#94a3b8' font-size='10'>Directive + template</text><rect x='450' y='100' width='140' height='24' rx='5' fill='#1e293b'/><text x='520' y='116' text-anchor='middle' fill='#6ee7b7' font-size='11' font-family='monospace'>@Component</text><rect x='450' y='130' width='140' height='24' rx='5' fill='#1e293b'/><text x='520' y='146' text-anchor='middle' fill='#6ee7b7' font-size='11' font-family='monospace'>app-header</text><rect x='450' y='160' width='140' height='24' rx='5' fill='#1e293b'/><text x='520' y='176' text-anchor='middle' fill='#6ee7b7' font-size='11' font-family='monospace'>app-card</text><text x='320' y='248' text-anchor='middle' fill='#475569' font-size='10'>Every @Component is technically a directive with a template attached</text></svg>",
+      "caption": "Angular 17+ new control flow (@if, @for, @switch) replaces the old *ngIf/*ngFor structural directives — no imports required."
+    },
+
+    {
+      "type": "text",
+      "title": "@if / @else if / @else — Conditional Rendering",
+      "content": "The @if block conditionally renders a section of the template based on a boolean expression. It replaces the old *ngIf directive and the verbose ng-template/else pattern.\n\nKey improvements over *ngIf:\n• No imports required — it is built into the Angular compiler\n• @else if chain is supported natively — no more multiple *ngIf with else\n• Easier to read — reads like regular TypeScript if/else\n• Can declare a local variable to unwrap an Observable or nullable value"
+    },
+    {
+      "type": "code",
+      "title": "@if / @else if / @else",
+      "filename": "status-card.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\n\ntype Status = 'loading' | 'success' | 'error' | 'empty';\n\n@Component({\n  selector: 'app-status-card',\n  standalone: true,\n  template: `\n    <!-- Basic @if / @else -->\n    @if (isLoggedIn()) {\n      <p>Welcome back, {{ username() }}!</p>\n    } @else {\n      <p>Please sign in to continue.</p>\n    }\n\n    <!-- @else if chain -->\n    @if (status() === 'loading') {\n      <div class=\"spinner\">Loading...</div>\n\n    } @else if (status() === 'error') {\n      <div class=\"error\">Something went wrong. <button (click)=\"retry()\">Retry</button></div>\n\n    } @else if (status() === 'empty') {\n      <div class=\"empty\">No results found.</div>\n\n    } @else {\n      <div class=\"content\">Data loaded successfully ✓</div>\n    }\n\n    <!-- Unwrap a nullable value with @if -->\n    @if (user(); as u) {\n      <!-- 'u' is narrowed to non-null inside this block -->\n      <h2>{{ u.name }}</h2>\n      <p>{{ u.email }}</p>\n    }\n  `,\n})\nexport class StatusCardComponent {\n  isLoggedIn = signal(false);\n  username   = signal('Ada Lovelace');\n  status     = signal<Status>('loading');\n  user       = signal<{ name: string; email: string } | null>(null);\n\n  retry(): void {\n    this.status.set('loading');\n    // ... retry logic\n  }\n}",
+      "explanation": "The 'as u' syntax in @if (user(); as u) narrows the type — inside the block, u is guaranteed non-null, so TypeScript won't complain about accessing u.name."
+    },
+    {
+      "type": "note",
+      "content": "The old *ngIf still works in Angular 17+, but the new @if is the recommended approach going forward. If you are using a project with CommonModule or NgIf imported, both syntaxes coexist without conflict."
+    },
+
+    {
+      "type": "text",
+      "title": "@for — Iterating Over Lists",
+      "content": "The @for block renders a template for each item in a collection. It replaces *ngFor and requires a track expression — this is NOT optional.\n\nThe track expression tells Angular how to identify each item uniquely. Angular uses it to figure out which DOM elements to reuse, create, or destroy when the list changes. This makes @for significantly faster than a naive re-render of the entire list.\n\nBuilt-in variables available inside @for:\n• $index  — position of the current item (0-based)\n• $first  — true for the first item\n• $last   — true for the last item\n• $even   — true for even-indexed items\n• $odd    — true for odd-indexed items\n• $count  — total number of items in the collection\n\nThe @empty block renders when the collection is empty — no separate *ngIf check needed."
+    },
+    {
+      "type": "code",
+      "title": "@for with track and @empty",
+      "filename": "task-list.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\n\ninterface Task {\n  id: number;\n  title: string;\n  done: boolean;\n  priority: 'low' | 'medium' | 'high';\n}\n\n@Component({\n  selector: 'app-task-list',\n  standalone: true,\n  template: `\n    <h2>Tasks ({{ tasks().length }})</h2>\n\n    @for (task of tasks(); track task.id) {\n      <!--                  ↑ track by unique id — required! -->\n\n      <div [class.done]=\"task.done\">\n        <!-- $index, $first, $last built-in variables -->\n        <span class=\"number\">{{ $index + 1 }}.</span>\n\n        <input type=\"checkbox\" [checked]=\"task.done\"\n               (change)=\"toggleTask(task.id)\" />\n\n        <span>{{ task.title }}</span>\n\n        <!-- $first / $last for special styling -->\n        @if ($first) { <span class=\"badge\">First</span> }\n        @if ($last)  { <span class=\"badge\">Last</span>  }\n\n        <!-- $even / $odd for zebra striping -->\n        <div [class.stripe]=\"$even\">{{ task.priority }}</div>\n      </div>\n\n    } @empty {\n      <!-- Rendered automatically when tasks() is an empty array -->\n      <div class=\"empty-state\">\n        <p>No tasks yet! Add one to get started.</p>\n      </div>\n    }\n\n    <button (click)=\"addTask()\">+ Add Task</button>\n    <button (click)=\"clearAll()\">Clear All</button>\n  `,\n})\nexport class TaskListComponent {\n  tasks = signal<Task[]>([\n    { id: 1, title: 'Learn @for syntax',   done: true,  priority: 'high'   },\n    { id: 2, title: 'Build a component',   done: false, priority: 'medium' },\n    { id: 3, title: 'Deploy to Netlify',   done: false, priority: 'low'    },\n  ]);\n\n  toggleTask(id: number): void {\n    this.tasks.update(list =>\n      list.map(t => t.id === id ? { ...t, done: !t.done } : t)\n    );\n  }\n\n  addTask(): void {\n    const newId = Date.now();\n    this.tasks.update(list => [\n      ...list,\n      { id: newId, title: 'New task', done: false, priority: 'medium' }\n    ]);\n  }\n\n  clearAll(): void {\n    this.tasks.set([]);   // triggers @empty block\n  }\n}",
+      "explanation": "track task.id is the key to performance. If you track by $index (the position), Angular has to re-render all items after any insertion. Tracking by a unique ID lets Angular reuse existing DOM nodes."
+    },
+    {
+      "type": "warning",
+      "content": "Never use track $index for lists that can be reordered, filtered, or have items inserted/deleted in the middle. When the index changes but the item doesn't, Angular destroys and recreates DOM nodes unnecessarily. Always track by a stable unique identifier like an id field."
+    },
+    {
+      "type": "diagram",
+      "title": "How track Improves Performance",
+      "svg": "<svg viewBox='0 0 640 280' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='280' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>track $index vs track item.id — ADDING ITEM AT TOP</text><text x='160' y='52' text-anchor='middle' fill='#f87171' font-size='12' font-weight='700'>track $index  ❌ Slow</text><text x='480' y='52' text-anchor='middle' fill='#4ade80' font-size='12' font-weight='700'>track item.id  ✓ Fast</text><rect x='30' y='62' width='260' height='36' rx='6' fill='#450a0a'/><text x='160' y='85' text-anchor='middle' fill='#f87171' font-size='11'>index 0: Alice → was Bob  DESTROY+CREATE</text><rect x='30' y='104' width='260' height='36' rx='6' fill='#450a0a'/><text x='160' y='127' text-anchor='middle' fill='#f87171' font-size='11'>index 1: Bob  → was Carol DESTROY+CREATE</text><rect x='30' y='146' width='260' height='36' rx='6' fill='#450a0a'/><text x='160' y='169' text-anchor='middle' fill='#f87171' font-size='11'>index 2: Carol → was Dave  DESTROY+CREATE</text><rect x='30' y='188' width='260' height='36' rx='6' fill='#14532d'/><text x='160' y='211' text-anchor='middle' fill='#4ade80' font-size='11'>index 3: Dave → NEW  CREATE</text><text x='160' y='240' text-anchor='middle' fill='#f87171' font-size='11'>4 DOM operations — ALL items recreated</text><rect x='350' y='62' width='260' height='36' rx='6' fill='#14532d'/><text x='480' y='85' text-anchor='middle' fill='#4ade80' font-size='11'>id:1 Alice — NEW  CREATE only</text><rect x='350' y='104' width='260' height='36' rx='6' fill='#1e293b'/><text x='480' y='127' text-anchor='middle' fill='#94a3b8' font-size='11'>id:2 Bob — REUSED  no change</text><rect x='350' y='146' width='260' height='36' rx='6' fill='#1e293b'/><text x='480' y='169' text-anchor='middle' fill='#94a3b8' font-size='11'>id:3 Carol — REUSED  no change</text><rect x='350' y='188' width='260' height='36' rx='6' fill='#1e293b'/><text x='480' y='211' text-anchor='middle' fill='#94a3b8' font-size='11'>id:4 Dave — REUSED  no change</text><text x='480' y='240' text-anchor='middle' fill='#4ade80' font-size='11'>1 DOM operation — only new item created</text><line x1='320' y1='50' x2='320' y2='260' stroke='#334155' stroke-width='1' stroke-dasharray='4,3'/></svg>",
+      "caption": "With track item.id, Angular creates only the new DOM node. With track $index, every node shifts and must be recreated."
+    },
+
+    {
+      "type": "text",
+      "title": "@switch / @case — Multi-Branch Conditionals",
+      "content": "The @switch block is the Angular equivalent of a JavaScript switch statement in templates. It is cleaner than a chain of @else if when you're comparing one expression against multiple values.\n\n• @switch (expr) — evaluates the expression once\n• @case (value) — renders if the expression matches this value (uses === strict equality)\n• @default — renders if no @case matches (optional but recommended)\n\nCommon use cases: status displays, role-based UI, theme selection, multi-step wizards."
+    },
+    {
+      "type": "code",
+      "title": "@switch / @case / @default",
+      "filename": "order-status.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\n\ntype OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';\n\n@Component({\n  selector: 'app-order-status',\n  standalone: true,\n  template: `\n    <!-- @switch evaluates once and matches with === -->\n    @switch (status()) {\n\n      @case ('pending') {\n        <div class=\"badge yellow\">⏳ Pending</div>\n        <p>Your order is awaiting confirmation.</p>\n      }\n\n      @case ('processing') {\n        <div class=\"badge blue\">⚙️ Processing</div>\n        <p>We are preparing your order.</p>\n      }\n\n      @case ('shipped') {\n        <div class=\"badge purple\">🚚 Shipped</div>\n        <p>Your order is on the way!</p>\n      }\n\n      @case ('delivered') {\n        <div class=\"badge green\">✅ Delivered</div>\n        <p>Order delivered. Enjoy!</p>\n      }\n\n      @case ('cancelled') {\n        <div class=\"badge red\">❌ Cancelled</div>\n        <p>This order was cancelled.</p>\n      }\n\n      @default {\n        <div class=\"badge grey\">❓ Unknown</div>\n        <p>Status not recognised.</p>\n      }\n    }\n\n    <!-- Cycle through statuses for demo -->\n    <button (click)=\"nextStatus()\">Next Status →</button>\n  `,\n})\nexport class OrderStatusComponent {\n  private statuses: OrderStatus[] =\n    ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];\n  private index = 0;\n\n  status = signal<OrderStatus>('pending');\n\n  nextStatus(): void {\n    this.index = (this.index + 1) % this.statuses.length;\n    this.status.set(this.statuses[this.index]);\n  }\n}",
+      "explanation": "@switch is cleaner than 5 chained @else if blocks when testing one expression against many values. Each @case block can contain any amount of HTML."
+    },
+
+    {
+      "type": "text",
+      "title": "NgClass — Dynamic CSS Classes",
+      "content": "NgClass is an attribute directive that lets you add or remove multiple CSS classes dynamically based on expressions. It is more powerful than the simple [class.name]=\"bool\" binding when you need to toggle several classes at once.\n\nNgClass accepts three formats:\n• A string: \"active bold\"  — adds those exact classes\n• An array: [\"active\", \"bold\"]  — adds all classes in the array\n• An object: { active: isActive, bold: isBold }  — adds keys whose values are truthy\n\nImport NgClass from @angular/common in your component's imports array."
+    },
+    {
+      "type": "code",
+      "title": "NgClass in Action",
+      "filename": "button.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\nimport { NgClass } from '@angular/common';   // import NgClass!\n\n@Component({\n  selector: 'app-button-demo',\n  standalone: true,\n  imports: [NgClass],\n  template: `\n    <!-- Object syntax — most common -->\n    <button\n      [ngClass]=\"{\n        'btn-primary':  variant() === 'primary',\n        'btn-danger':   variant() === 'danger',\n        'btn-outline':  outlined(),\n        'btn-disabled': disabled(),\n        'btn-lg':       size() === 'lg',\n        'btn-sm':       size() === 'sm'\n      }\"\n      [disabled]=\"disabled()\"\n    >\n      Click me\n    </button>\n\n    <!-- Array syntax -->\n    <div [ngClass]=\"['card', 'shadow', elevated() ? 'elevated' : '']\">\n      Card content\n    </div>\n\n    <!-- String syntax (static string from a computed signal) -->\n    <span [ngClass]=\"badgeClasses()\">Badge</span>\n\n    <!-- Controls for demo -->\n    <select (change)=\"variant.set($any($event.target).value)\">\n      <option value=\"primary\">Primary</option>\n      <option value=\"danger\">Danger</option>\n    </select>\n    <label>\n      <input type=\"checkbox\" (change)=\"outlined.update(v => !v)\" /> Outlined\n    </label>\n  `,\n})\nexport class ButtonDemoComponent {\n  variant  = signal<'primary' | 'danger'>('primary');\n  outlined = signal(false);\n  disabled = signal(false);\n  size     = signal<'sm' | 'md' | 'lg'>('md');\n  elevated = signal(true);\n\n  badgeClasses = () =>\n    `badge badge-${this.variant()} ${this.outlined() ? 'badge-outline' : ''}`;\n}",
+      "explanation": "The object syntax is safest — each key is added/removed independently without affecting other classes. The string syntax overwrites ALL classes on the element."
+    },
+
+    {
+      "type": "text",
+      "title": "NgStyle — Dynamic Inline Styles",
+      "content": "NgStyle is an attribute directive that sets multiple CSS styles at once using a JavaScript object. It complements the simpler [style.property]=\"value\" binding when you need to set several styles dynamically from one expression.\n\nImport NgStyle from @angular/common.\n\nThe value is an object where keys are CSS property names (camelCase or kebab-case) and values are the CSS values as strings.\n\nNote: Prefer Tailwind/CSS classes over inline styles whenever possible — inline styles are harder to override and can hurt performance. Use NgStyle only when the style value must be computed at runtime (e.g., dynamic colour from a database, canvas-based positioning)."
+    },
+    {
+      "type": "code",
+      "title": "NgStyle and When to Use It",
+      "filename": "progress.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal, computed } from '@angular/core';\nimport { NgStyle } from '@angular/common';\n\n@Component({\n  selector: 'app-progress',\n  standalone: true,\n  imports: [NgStyle],\n  template: `\n    <!-- ✓ Good use: dynamic value from runtime data -->\n    <div class=\"progress-track\">\n      <div\n        class=\"progress-fill\"\n        [ngStyle]=\"progressStyles()\"\n      ></div>\n    </div>\n    <p>{{ percent() }}% complete</p>\n\n    <!-- ✓ Good use: position from data (e.g., map marker) -->\n    <div\n      class=\"marker\"\n      [ngStyle]=\"{ top: markerY() + 'px', left: markerX() + 'px' }\"\n    >\n      📍\n    </div>\n\n    <!-- Controls -->\n    <input type=\"range\" min=\"0\" max=\"100\"\n           [value]=\"percent()\"\n           (input)=\"percent.set(+$any($event.target).value)\" />\n  `,\n})\nexport class ProgressComponent {\n  percent = signal(42);\n  markerX = signal(120);\n  markerY = signal(80);\n\n  progressStyles = computed(() => ({\n    width:           this.percent() + '%',\n    backgroundColor: this.percent() < 33 ? '#ef4444' :\n                     this.percent() < 66 ? '#f59e0b' : '#22c55e',\n    transition:      'all 0.3s ease',\n  }));\n}",
+      "explanation": "Using computed() to produce the styles object means it only recalculates when percent() changes — Angular doesn't create a new object on every change detection cycle."
+    },
+
+    {
+      "type": "text",
+      "title": "Custom Attribute Directives",
+      "content": "You can create your own attribute directives to package reusable DOM behaviour. A custom directive is a class decorated with @Directive.\n\nKey tools inside a directive:\n• inject(ElementRef) — gives you the native DOM element\n• HostListener('event') — listens to DOM events on the host element\n• HostBinding('property') — binds a host element property to a class field\n• input() — accepts configuration values from the parent template\n\nGood candidates for custom directives:\n• Highlight on hover\n• Auto-focus an input\n• Click-outside detection\n• Tooltip behaviour\n• Permission-based visibility"
+    },
+    {
+      "type": "code",
+      "title": "Custom Highlight Directive",
+      "filename": "highlight.directive.ts",
+      "language": "typescript",
+      "code": "import {\n  Directive, HostListener, HostBinding,\n  inject, ElementRef, input\n} from '@angular/core';\n\n/**\n * Usage: <p appHighlight highlightColor=\"#fef08a\">Hover me!</p>\n *        <p appHighlight>Default yellow highlight</p>\n */\n@Directive({\n  selector: '[appHighlight]',   // attribute selector — applied to any element\n  standalone: true,\n})\nexport class HighlightDirective {\n  // Optional input: the colour to highlight with\n  highlightColor = input<string>('#fef08a');   // default: yellow\n\n  private el = inject(ElementRef);            // reference to the host DOM element\n\n  // HostBinding — binds host element's style.backgroundColor to this field\n  @HostBinding('style.backgroundColor') bgColor = 'transparent';\n  @HostBinding('style.transition')      transition = 'background-color 0.2s';\n\n  // HostListener — listens to events on the host element\n  @HostListener('mouseenter') onMouseEnter(): void {\n    this.bgColor = this.highlightColor();\n  }\n\n  @HostListener('mouseleave') onMouseLeave(): void {\n    this.bgColor = 'transparent';\n  }\n\n  @HostListener('click') onClick(): void {\n    // Direct DOM access via ElementRef when needed\n    this.el.nativeElement.style.outline = '2px solid ' + this.highlightColor();\n    setTimeout(() => {\n      this.el.nativeElement.style.outline = '';\n    }, 600);\n  }\n}",
+      "explanation": "@HostBinding is like property binding on the host element. @HostListener is like event binding on the host element. Together they let the directive react to and modify its host without the parent knowing."
+    },
+    {
+      "type": "code",
+      "title": "Using Custom Directives — Importing and Applying",
+      "filename": "app.component.ts",
+      "language": "typescript",
+      "code": "import { Component } from '@angular/core';\nimport { HighlightDirective } from './highlight.directive';\n\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [HighlightDirective],   // ← import the directive here\n  template: `\n    <!-- Apply with the attribute selector -->\n    <p appHighlight>Hover me — default yellow highlight</p>\n\n    <!-- Pass a custom colour via input -->\n    <p appHighlight highlightColor=\"#bfdbfe\">Hover me — blue highlight</p>\n\n    <!-- Works on any HTML element -->\n    <button appHighlight highlightColor=\"#bbf7d0\">\n      Highlighted button\n    </button>\n\n    <!-- Works on components too -->\n    <!-- <app-card appHighlight /> -->\n  `,\n})\nexport class AppComponent {}",
+      "explanation": "Standalone directives must be imported in the imports array of any component that uses them — just like standalone components."
+    },
+    {
+      "type": "code",
+      "title": "Practical Directive: Auto-Focus",
+      "filename": "autofocus.directive.ts",
+      "language": "typescript",
+      "code": "import { Directive, inject, ElementRef, AfterViewInit } from '@angular/core';\n\n/**\n * Automatically focuses the host element after it appears in the DOM.\n * Usage: <input appAutofocus type=\"text\" />\n */\n@Directive({\n  selector: '[appAutofocus]',\n  standalone: true,\n})\nexport class AutofocusDirective implements AfterViewInit {\n  private el = inject(ElementRef);\n\n  ngAfterViewInit(): void {\n    // Use setTimeout to ensure the browser's event loop is clear\n    // before attempting focus — important inside modals and @if blocks\n    setTimeout(() => this.el.nativeElement.focus(), 0);\n  }\n}\n\n// ── Usage ──────────────────────────────────────────────────\n// <dialog>\n//   <input appAutofocus placeholder=\"Search...\" />\n// </dialog>\n//\n// The input is focused automatically when the dialog opens.",
+      "explanation": "The setTimeout(..., 0) pattern defers the focus call to after the current rendering cycle, ensuring the element is fully rendered and interactive before focus() is called."
+    },
+    {
+      "type": "tip",
+      "content": "When choosing between a custom directive and a component for reusable behaviour: if it needs its own template (HTML structure), use a component. If it only needs to add behaviour or modify an existing element, use a directive. Directives are lighter and more flexible since they can be applied to any element."
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "What are the three types of directives in Angular?",
+      "a": "① Structural directives — alter the DOM structure by adding, removing, or manipulating elements (@if, @for, @switch, *ngIf, *ngFor). ② Attribute directives — modify the appearance or behaviour of an existing element without changing the DOM structure (NgClass, NgStyle, custom directives). ③ Component directives — directives with a template attached; every @Component is technically a directive."
+    },
+    {
+      "q": "What is the difference between the new @if syntax and the old *ngIf?",
+      "a": "The new @if (Angular 17+) is built into the compiler — no imports or NgIf needed. It supports @else if natively, avoiding the awkward ng-template + else pattern. It also supports the 'as' syntax to unwrap nullable values: @if (user(); as u) { ... } where u is non-null inside the block. The old *ngIf still works but is considered legacy. Both compile to similar output; the main difference is developer experience."
+    },
+    {
+      "q": "Why is the track expression required in @for, and what should you track?",
+      "a": "track tells Angular how to uniquely identify each item in the list so it can reuse existing DOM nodes instead of destroying and recreating them when the list changes. Always track by a stable unique field — usually an id: track item.id. Avoid track $index for mutable lists because when an item is inserted or removed, all subsequent indices change, forcing Angular to recreate every DOM node after the insertion point."
+    },
+    {
+      "q": "What built-in variables are available inside @for and what do they represent?",
+      "a": "$index — the zero-based position of the current item. $first — boolean, true for the first item. $last — boolean, true for the last item. $even — boolean, true for even-indexed items (0, 2, 4...). $odd — boolean, true for odd-indexed items. $count — total number of items in the collection. These enable common patterns like zebra striping, 'last item' dividers, and numbered lists."
+    },
+    {
+      "q": "When would you use @switch instead of @if / @else if?",
+      "a": "@switch is preferable when you are testing a single expression against multiple specific values (like a status field with 5 possible values). @if / @else if is better for independent boolean conditions or ranges. @switch uses strict equality (===) for comparison. A key advantage of @switch is readability — each @case makes it immediately clear which value triggers which UI."
+    },
+    {
+      "q": "What is the difference between NgClass and the simple [class.name] binding?",
+      "a": "[class.name]=\"bool\" adds or removes a single named class and is the simplest approach for toggling one class. NgClass with an object map { 'class-a': condA, 'class-b': condB } handles multiple classes simultaneously. NgClass with a string replaces the entire className. Prefer [class.name] for single toggles; use NgClass when you need to manage several classes with different conditions at once."
+    },
+    {
+      "q": "How do you create a custom attribute directive and what decorators are used inside it?",
+      "a": "Decorate a class with @Directive({ selector: '[appMyDirective]', standalone: true }). Inside: inject(ElementRef) to access the host DOM element; @HostListener('event') to respond to DOM events on the host element; @HostBinding('property') to bind a class field to a host element property; input() to receive configuration from the parent. The directive is then imported in any component's imports array and applied by adding its selector attribute to any HTML element."
+    },
+    {
+      "q": "What is the difference between HostListener and HostBinding?",
+      "a": "@HostListener listens to events on the host element — similar to event binding (event)=\"handler()\" in a template. @HostBinding binds a class property to a host element property or attribute — similar to property binding [prop]=\"value\" in a template. For example, @HostBinding('style.backgroundColor') sets the background colour of the host element directly from a class property."
+    },
+    {
+      "q": "Can a directive be applied to a component? Can multiple directives be on the same element?",
+      "a": "Yes to both. A directive can be applied to any HTML element OR any component — the directive sees the host element regardless of whether it is a native element or a component. Multiple directives can coexist on the same element by listing all their selectors: <div appHighlight appTooltip appPermission>. Each directive operates independently on the same host element."
+    },
+    {
+      "q": "When should you use a directive instead of a component for reusable behaviour?",
+      "a": "Use a directive when the behaviour does not require its own HTML structure — it only needs to modify or react to the host element (highlighting, focus, scroll tracking, permission checking). Use a component when the reusable piece needs its own template. Directives are more flexible because they can be applied to any element type, whereas a component introduces a specific DOM element."
+    }
+  ]
+}

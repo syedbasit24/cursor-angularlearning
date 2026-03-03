@@ -1,0 +1,138 @@
+<aside
+  [class]="'fixed left-0 top-0 h-full z-40 flex flex-col transition-all duration-300 ease-in-out ' +
+           'bg-gray-950 border-r border-gray-800/60 ' +
+           (collapsed() ? 'w-16' : 'w-64')"
+>
+
+  <!-- ── Logo ──────────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3 px-4 py-5 border-b border-gray-800/60 flex-shrink-0">
+    <div
+      class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center
+             bg-gradient-to-br from-primary-500 to-primary-700 shadow-lg shadow-primary-900/40"
+    >
+      <!-- Angular Shield SVG (simplified) -->
+      <svg viewBox="0 0 24 24" class="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 6.5l1.5 10.5L12 22l8.5-5L22 6.5 12 2zm0 2.18l7.1 3.32-1.28 8.96L12 19.82l-5.82-3.36L4.9 7.5 12 4.18zM8.5 15h1.8l.7-1.8h2l.7 1.8h1.8L12 8 8.5 15zm2.1-3l1.4-3.6 1.4 3.6H10.6z"/>
+      </svg>
+    </div>
+
+    @if (!collapsed()) {
+      <div class="animate-fade-in">
+        <h1 class="text-white font-bold text-sm leading-tight tracking-tight">Angular Academy</h1>
+        <p class="text-gray-500 text-xs mt-0.5">Learn · Build · Master</p>
+      </div>
+    }
+  </div>
+
+  <!-- ── Navigation ────────────────────────────────────────────── -->
+  <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5" aria-label="Main navigation">
+
+    @for (item of navItems; track item.label) {
+
+      @if (!item.children) {
+        <!-- Simple nav link -->
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="!text-primary-400 !bg-primary-500/10 border-l-2 border-primary-500"
+          [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+          [title]="collapsed() ? item.label : ''"
+          class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                 text-gray-400 hover:text-white hover:bg-white/5
+                 transition-all duration-150 cursor-pointer"
+        >
+          <span class="flex-shrink-0 text-base leading-none w-5 text-center">{{ getNavIcon(item.icon) }}</span>
+          @if (!collapsed()) {
+            <span class="flex-1 truncate">{{ item.label }}</span>
+            @if (item.badge) {
+              <span class="text-[10px] font-semibold bg-primary-500 text-white px-1.5 py-0.5 rounded-full leading-none">
+                {{ item.badge }}
+              </span>
+            }
+          }
+        </a>
+
+      } @else {
+        <!-- Expandable group -->
+        <div>
+          <button
+            (click)="toggleGroup(item.label)"
+            [title]="collapsed() ? item.label : ''"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                   text-gray-400 hover:text-white hover:bg-white/5
+                   transition-all duration-150 cursor-pointer"
+          >
+            <span class="flex-shrink-0 text-base leading-none w-5 text-center">{{ getNavIcon(item.icon) }}</span>
+            @if (!collapsed()) {
+              <span class="flex-1 truncate text-left">{{ item.label }}</span>
+              <svg
+                class="w-3.5 h-3.5 text-gray-600 transition-transform duration-200 flex-shrink-0"
+                [class.rotate-180]="isGroupExpanded(item.label)"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+              </svg>
+            }
+          </button>
+
+          @if (isGroupExpanded(item.label) && !collapsed()) {
+            <div class="ml-3 mt-0.5 border-l border-gray-800 pl-3 pb-1 space-y-0.5 animate-fade-in">
+              @for (child of item.children; track child.label) {
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="!text-primary-400 !bg-primary-500/10"
+                  class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium
+                         text-gray-500 hover:text-gray-200 hover:bg-white/5
+                         transition-all duration-150 cursor-pointer"
+                >
+                  <span class="flex-1 truncate">{{ child.label }}</span>
+                  @if (child.badge) {
+                    <span class="text-[10px] font-semibold bg-primary-500/80 text-white px-1.5 py-0.5 rounded-full leading-none">
+                      {{ child.badge }}
+                    </span>
+                  }
+                </a>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </nav>
+
+  <!-- ── Bottom: XP Bar + Theme Toggle ─────────────────────────── -->
+  @if (!collapsed()) {
+    <div class="px-3 py-4 border-t border-gray-800/60 flex-shrink-0 animate-fade-in">
+
+      <!-- XP Progress bar -->
+      <div class="mb-3">
+        <div class="flex justify-between items-center text-xs mb-1.5">
+          <span class="text-gray-400 font-medium">Level {{ level() }}</span>
+          <span class="text-primary-400 font-semibold">{{ totalXp() }} XP</span>
+        </div>
+        <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div
+            class="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-700"
+            [style.width]="xpBarWidth()"
+          ></div>
+        </div>
+        <p class="text-gray-600 text-xs mt-1">{{ completedCount() }} / 11 topics done</p>
+      </div>
+
+      <!-- Dark / Light mode toggle -->
+      <button
+        (click)="toggleTheme()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+               text-gray-500 hover:text-white hover:bg-white/5
+               transition-all duration-150"
+      >
+        @if (isDark()) {
+          <span class="text-base">☀️</span>
+          <span>Light Mode</span>
+        } @else {
+          <span class="text-base">🌙</span>
+          <span>Dark Mode</span>
+        }
+      </button>
+    </div>
+  }
+</aside>

@@ -1,0 +1,193 @@
+{
+  "id": "routing",
+  "title": "Routing",
+  "subtitle": "Build multi-page apps with Angular's powerful router",
+  "description": "Master Angular's Router — configure routes, lazy load pages, pass parameters, build nested layouts, protect routes with guards, and navigate programmatically with full type safety.",
+  "icon": "🗺️",
+  "xp": 160,
+  "difficulty": "Intermediate",
+  "estimatedTime": "40 min",
+  "prevLesson": { "id": "services", "title": "Services & DI", "route": "/learn/services" },
+  "nextLesson": { "id": "signals", "title": "Signals", "route": "/learn/signals" },
+  "keyPoints": [
+    "provideRouter() sets up the router with your route definitions in app.config.ts",
+    "loadComponent() lazy-loads a standalone component only when its route is visited",
+    "RouterLink navigates without a full page reload — keeping Angular's state intact",
+    "Route parameters (:id) are bound directly to component inputs via withComponentInputBinding()",
+    "Child routes share a parent layout (shell pattern) — the parent renders <router-outlet />",
+    "Route guards (CanActivateFn) protect routes from unauthorised access",
+    "withViewTransitions() enables smooth CSS View Transitions between route changes"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "What Is the Angular Router?",
+      "content": "The Angular Router is a client-side navigation library that maps URL paths to components. When the URL changes, Angular swaps the displayed component without reloading the browser page — this is what makes Angular a Single Page Application (SPA).\n\nThe router synchronises the browser URL, the browser history (back/forward buttons), and the currently displayed component tree, all automatically.\n\nKey pieces you will work with:\n• Routes array — maps URL paths to components\n• provideRouter() — registers the router in the app\n• <router-outlet> — the placeholder where routed components render\n• RouterLink — the directive that creates navigation links\n• Router service — lets you navigate programmatically from TypeScript\n• ActivatedRoute — lets a component read its own URL parameters"
+    },
+    {
+      "type": "diagram",
+      "title": "How the Router Works",
+      "svg": "<svg viewBox='0 0 640 290' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='290' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>ANGULAR ROUTER — REQUEST FLOW</text><rect x='20' y='44' width='120' height='50' rx='8' fill='#1e3a5f' opacity='0.6'/><rect x='20' y='44' width='120' height='50' rx='8' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='80' y='65' text-anchor='middle' fill='#60a5fa' font-size='11' font-weight='600'>User clicks</text><text x='80' y='80' text-anchor='middle' fill='#94a3b8' font-size='10'>[routerLink] or</text><text x='80' y='92' text-anchor='middle' fill='#94a3b8' font-size='9'>router.navigate()</text><path d='M140 69 L180 69' stroke='#334155' stroke-width='2' marker-end='url(#a1)'/><rect x='180' y='44' width='120' height='50' rx='8' fill='#4c1d95' opacity='0.3'/><rect x='180' y='44' width='120' height='50' rx='8' fill='none' stroke='#8b5cf6' stroke-width='1.5'/><text x='240' y='65' text-anchor='middle' fill='#a78bfa' font-size='11' font-weight='600'>URL updates</text><text x='240' y='80' text-anchor='middle' fill='#94a3b8' font-size='10'>history.pushState</text><text x='240' y='92' text-anchor='middle' fill='#94a3b8' font-size='9'>no page reload</text><path d='M300 69 L340 69' stroke='#334155' stroke-width='2' marker-end='url(#a1)'/><rect x='340' y='44' width='130' height='50' rx='8' fill='#DD0031' opacity='0.15'/><rect x='340' y='44' width='130' height='50' rx='8' fill='none' stroke='#DD0031' stroke-width='1.5'/><text x='405' y='65' text-anchor='middle' fill='#DD0031' font-size='11' font-weight='600'>Router matches</text><text x='405' y='80' text-anchor='middle' fill='#94a3b8' font-size='10'>URL → Route config</text><text x='405' y='92' text-anchor='middle' fill='#94a3b8' font-size='9'>runs guards</text><path d='M470 69 L510 69' stroke='#334155' stroke-width='2' marker-end='url(#a1)'/><rect x='510' y='44' width='110' height='50' rx='8' fill='#065f46' opacity='0.2'/><rect x='510' y='44' width='110' height='50' rx='8' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='565' y='65' text-anchor='middle' fill='#34d399' font-size='11' font-weight='600'>Component</text><text x='565' y='80' text-anchor='middle' fill='#94a3b8' font-size='10'>lazy loaded</text><text x='565' y='92' text-anchor='middle' fill='#94a3b8' font-size='9'>rendered in outlet</text><rect x='50' y='130' width='540' height='130' rx='10' fill='#1e293b' opacity='0.7'/><rect x='50' y='130' width='540' height='130' rx='10' fill='none' stroke='#334155' stroke-width='1'/><text x='320' y='152' text-anchor='middle' fill='#64748b' font-size='11' font-weight='600'>app.routes.ts — Route Configuration</text><rect x='70' y='162' width='230' height='26' rx='5' fill='#0f172a'/><text x='185' y='179' text-anchor='middle' fill='#fca5a5' font-size='10' font-family='monospace'>{ path: '', component: HomeComponent }</text><rect x='70' y='194' width='230' height='26' rx='5' fill='#0f172a'/><text x='185' y='211' text-anchor='middle' fill='#93c5fd' font-size='10' font-family='monospace'>{ path: 'about', loadComponent: ... }</text><rect x='70' y='226' width='230' height='26' rx='5' fill='#0f172a'/><text x='185' y='243' text-anchor='middle' fill='#6ee7b7' font-size='10' font-family='monospace'>{ path: '**', component: NotFound }</text><rect x='320' y='162' width='250' height='86' rx='5' fill='#0f172a'/><text x='445' y='179' text-anchor='middle' fill='#34d399' font-size='11' font-weight='600'>&lt;router-outlet /&gt;</text><text x='445' y='198' text-anchor='middle' fill='#475569' font-size='10'>Routed component renders here</text><text x='445' y='216' text-anchor='middle' fill='#475569' font-size='10'>Swapped on navigation</text><text x='445' y='234' text-anchor='middle' fill='#475569' font-size='10'>Parent layout stays the same</text><defs><marker id='a1' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#475569'/></marker></defs></svg>",
+      "caption": "The router intercepts clicks on RouterLink, updates the URL without reload, matches the new URL to a route, runs any guards, then renders the matched component in <router-outlet>."
+    },
+    {
+      "type": "text",
+      "title": "Setting Up the Router",
+      "content": "In a standalone Angular app (Angular 17+), you configure the router in app.config.ts by calling provideRouter() inside the providers array. This replaces the old RouterModule.forRoot() approach.\n\nThe provideRouter() function accepts your routes array and optional feature functions:\n• withComponentInputBinding() — automatically binds route params/data to component inputs\n• withViewTransitions() — enables smooth CSS View Transitions between routes\n• withDebugTracing() — logs every router event to the console (dev only)\n• withHashLocation() — uses #/path URLs instead of /path (for static hosting without URL rewriting)"
+    },
+    {
+      "type": "code",
+      "title": "Router Setup in app.config.ts",
+      "filename": "app.config.ts",
+      "language": "typescript",
+      "code": "import { ApplicationConfig } from '@angular/core';\nimport { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';\nimport { provideHttpClient } from '@angular/common/http';\nimport { routes } from './app.routes';\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideRouter(\n      routes,\n\n      // Automatically binds route params/query/data to component @input() signals\n      // e.g. route { path: 'user/:id' } → component input() id will receive the value\n      withComponentInputBinding(),\n\n      // Smooth CSS View Transitions API between route navigations\n      withViewTransitions(),\n    ),\n\n    provideHttpClient(),\n  ],\n};",
+      "explanation": "withComponentInputBinding() is the key feature that lets you receive route parameters as component inputs instead of manually injecting ActivatedRoute — much cleaner!"
+    },
+    {
+      "type": "code",
+      "title": "Defining Routes — app.routes.ts",
+      "filename": "app.routes.ts",
+      "language": "typescript",
+      "code": "import { Routes } from '@angular/router';\nimport { authGuard } from './core/guards/auth.guard';\n\nexport const routes: Routes = [\n\n  // ① Static route — component loaded eagerly\n  {\n    path: '',\n    loadComponent: () =>\n      import('./features/home/home.component').then(m => m.HomeComponent),\n    title: 'Home',   // sets the browser tab title\n  },\n\n  // ② Route with URL parameter (:id)\n  {\n    path: 'user/:id',\n    loadComponent: () =>\n      import('./features/user/user.component').then(m => m.UserComponent),\n    title: 'User Profile',\n  },\n\n  // ③ Nested routes — ShellComponent renders children via its own <router-outlet>\n  {\n    path: 'dashboard',\n    loadComponent: () =>\n      import('./features/shell/shell.component').then(m => m.ShellComponent),\n    canActivate: [authGuard],   // guard: only logged-in users\n    children: [\n      { path: '',        redirectTo: 'overview', pathMatch: 'full' },\n      { path: 'overview',  loadComponent: () => import('./features/overview/overview.component').then(m => m.OverviewComponent) },\n      { path: 'settings',  loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent) },\n    ],\n  },\n\n  // ④ Redirect\n  { path: 'home', redirectTo: '', pathMatch: 'full' },\n\n  // ⑤ 404 — catch-all wildcard (must be LAST)\n  {\n    path: '**',\n    loadComponent: () =>\n      import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),\n    title: '404 Not Found',\n  },\n];\n\n// Note: loadComponent() replaces the old component: property.\n// The import() returns a Promise — Angular only downloads the\n// component's JavaScript bundle when the route is first visited.",
+      "explanation": "path: '**' is the catch-all wildcard — it must always be the last route. The router checks routes from top to bottom and uses the first match."
+    },
+    {
+      "type": "text",
+      "title": "RouterLink — Navigation Without Page Reloads",
+      "content": "RouterLink is a directive that turns any element into a navigation link. Unlike a plain <a href>, RouterLink uses the Angular router, so the page never fully reloads — Angular's state, services, and the DOM all stay intact.\n\nKey RouterLink features:\n• [routerLink]=\"'/path'\" — absolute path\n• [routerLink]=\"['user', userId]\" — array form, segments joined automatically\n• routerLinkActive — adds a CSS class when the route is active\n• [routerLinkActiveOptions]=\"{ exact: true }\" — only active on exact match (important for '/')\n• [queryParams]=\"{ search: 'Angular' }\" — adds ?search=Angular to the URL\n• [fragment]=\"'section'\" — adds #section to the URL"
+    },
+    {
+      "type": "code",
+      "title": "RouterLink and RouterLinkActive",
+      "filename": "nav.component.ts",
+      "language": "typescript",
+      "code": "import { Component } from '@angular/core';\nimport { RouterLink, RouterLinkActive } from '@angular/router';\n\n@Component({\n  selector: 'app-nav',\n  standalone: true,\n  imports: [RouterLink, RouterLinkActive],\n  template: `\n    <nav>\n      <!-- String path -->\n      <a routerLink=\"/\" routerLinkActive=\"active\"\n         [routerLinkActiveOptions]=\"{ exact: true }\">\n        Home\n      </a>\n\n      <!-- Array form — segments are joined: /user/42 -->\n      <a [routerLink]=\"['/user', userId]\" routerLinkActive=\"active\">\n        My Profile\n      </a>\n\n      <!-- With query params: /search?q=Angular&page=1 -->\n      <a routerLink=\"/search\"\n         [queryParams]=\"{ q: 'Angular', page: 1 }\"\n         routerLinkActive=\"active\">\n        Search Angular\n      </a>\n\n      <!-- With fragment: /docs#installation -->\n      <a routerLink=\"/docs\" fragment=\"installation\" routerLinkActive=\"active\">\n        Docs → Installation\n      </a>\n\n      <!-- routerLinkActive on a wrapper element -->\n      <li routerLinkActive=\"menu-active\">\n        <a routerLink=\"/settings\">Settings</a>\n      </li>\n    </nav>\n  `,\n  styles: [`\n    a.active    { color: #DD0031; font-weight: 700; border-bottom: 2px solid #DD0031; }\n    li.menu-active { background: #f1f5f9; }\n  `]\n})\nexport class NavComponent {\n  userId = 42;\n}",
+      "explanation": "[routerLinkActiveOptions]=\"{ exact: true }\" is important for the root path '/'. Without it, the Home link would always be active because every URL starts with '/'."
+    },
+    {
+      "type": "text",
+      "title": "Lazy Loading — loadComponent()",
+      "content": "Lazy loading means a component's JavaScript is only downloaded when its route is first visited. This dramatically reduces the initial bundle size and speeds up the first page load.\n\nWith standalone components, lazy loading is as simple as replacing:\n  component: HomeComponent\nwith:\n  loadComponent: () => import('./home/home.component').then(m => m.HomeComponent)\n\nAngular's bundler (esbuild) automatically splits the HomeComponent and all its dependencies into a separate JavaScript chunk. That chunk is only fetched from the server when the user navigates to '/'.\n\nFor a group of related routes (a feature area), use loadChildren() to lazy-load an entire routes array — one network request for all routes in that feature."
+    },
+    {
+      "type": "code",
+      "title": "Lazy Loading with loadComponent and loadChildren",
+      "filename": "app.routes.ts",
+      "language": "typescript",
+      "code": "import { Routes } from '@angular/router';\n\nexport const routes: Routes = [\n\n  // ── loadComponent — one component, one chunk ─────────────\n  {\n    path: 'about',\n    loadComponent: () =>\n      import('./features/about/about.component')\n        .then(m => m.AboutComponent),\n    // Angular creates: chunk-about-component.js (~5kB)\n    // Only downloaded when user visits /about\n  },\n\n  // ── loadChildren — entire feature area, one chunk ────────\n  {\n    path: 'admin',\n    loadChildren: () =>\n      import('./features/admin/admin.routes')\n        .then(m => m.adminRoutes),\n    // admin.routes.ts defines all admin sub-routes\n    // Angular bundles ALL admin components into one admin chunk\n    // Only downloaded when user visits any /admin/* path\n  },\n\n];\n\n// ── admin/admin.routes.ts ─────────────────────────────────\n// export const adminRoutes: Routes = [\n//   { path: '',        loadComponent: () => import('./dashboard.component')... },\n//   { path: 'users',   loadComponent: () => import('./users.component')...    },\n//   { path: 'reports', loadComponent: () => import('./reports.component')...  },\n// ];\n\n// ── Build output (ng build) shows separate chunks: ────────\n// main.js             (app shell + router)    ~120kB\n// chunk-about.js      (about page)              ~8kB\n// chunk-admin.js      (all admin pages)         ~45kB\n// ← admin chunk downloaded only on /admin visit",
+      "explanation": "loadChildren() is ideal for feature areas because related components share helper code — bundling them together avoids repeating that code in multiple chunks."
+    },
+    {
+      "type": "text",
+      "title": "Route Parameters and withComponentInputBinding",
+      "content": "Routes can contain dynamic segments — parts of the URL that vary per navigation. These are called route parameters and are declared with a colon prefix: path: 'product/:id'.\n\nWith withComponentInputBinding() enabled in your app config, Angular automatically passes the route parameter as a component input. The input name must match the parameter name exactly.\n\nYou can receive:\n• Route params  (:id)         — as a required input()\n• Query params  (?search=...)  — as an optional input()\n• Route data    (data: {...})  — as an optional input()\n\nAll of these become signal-based inputs when you use the input() function."
+    },
+    {
+      "type": "code",
+      "title": "Route Parameters as Component Inputs",
+      "filename": "product.component.ts",
+      "language": "typescript",
+      "code": "import { Component, input, computed, inject, effect } from '@angular/core';\nimport { RouterLink } from '@angular/router';\nimport { ProductService } from './product.service';\n\n// Route definition: { path: 'product/:id', loadComponent: ... }\n\n@Component({\n  selector: 'app-product',\n  standalone: true,\n  imports: [RouterLink],\n  template: `\n    @if (product(); as p) {\n      <nav>\n        <a routerLink=\"/products\">← Products</a>\n        <span>/ {{ p.name }}</span>\n      </nav>\n      <h1>{{ p.name }}</h1>\n      <p>{{ p.description }}</p>\n      <p>Price: {{ p.price | currency }}</p>\n    } @else if (loading()) {\n      <p>Loading product {{ id() }}...</p>\n    } @else {\n      <p>Product not found.</p>\n    }\n\n    <!-- Query params are also received as inputs -->\n    @if (tab()) {\n      <p>Active tab: {{ tab() }}</p>\n    }\n  `,\n})\nexport class ProductComponent {\n  // ① Route param :id → received automatically as input\n  //    withComponentInputBinding() in app.config wires this up\n  id = input.required<string>();\n\n  // ② Query param ?tab=reviews → also received as input\n  tab = input<string>();\n\n  private productService = inject(ProductService);\n\n  loading = this.productService.loading;\n  product = computed(() =>\n    this.productService.getById(+this.id())  // +id() converts string → number\n  );\n\n  constructor() {\n    // effect() re-runs whenever id() changes (user navigates to different product)\n    effect(() => {\n      this.productService.load(+this.id());\n    });\n  }\n}\n\n// URLs that will work:\n// /product/1          → id()='1'\n// /product/42?tab=reviews  → id()='42', tab()='reviews'",
+      "explanation": "effect() re-runs whenever the id() signal changes — so navigating from /product/1 to /product/2 automatically triggers a fresh data load without needing ngOnChanges."
+    },
+    {
+      "type": "text",
+      "title": "Nested Routes and the Shell Pattern",
+      "content": "Nested routes allow a parent component to provide a persistent layout (sidebar, header, tabs) while child components render inside a <router-outlet> inside that parent.\n\nThis is called the Shell Pattern — the shell component is the frame, and child routes swap in and out as the content area.\n\nIn this application, ShellComponent is the frame (header + sidebar). All pages are children of the shell route. When you navigate between pages, only the content area inside the shell's <router-outlet> changes — the sidebar and header stay mounted and don't re-render.\n\nYou can nest routes as deeply as you like. Each level needs its own <router-outlet> in its template."
+    },
+    {
+      "type": "code",
+      "title": "Nested Routes — Shell Pattern",
+      "filename": "shell.routes.ts",
+      "language": "typescript",
+      "code": "// ── app.routes.ts ─────────────────────────────────────────\nexport const routes: Routes = [\n  {\n    path: '',\n    // ShellComponent = the persistent layout (sidebar + header)\n    loadComponent: () =>\n      import('./shell/shell.component').then(m => m.ShellComponent),\n    children: [\n\n      // These render INSIDE ShellComponent's <router-outlet>\n      { path: '',         loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) },\n      { path: 'topics',   loadComponent: () => import('./topics/topics.component').then(m => m.TopicsComponent) },\n      { path: 'settings', loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },\n\n      // Further nesting: /learn/basics, /learn/components, ...\n      {\n        path: 'learn',\n        loadComponent: () =>\n          import('./learn/learn.component').then(m => m.LearnComponent),\n        children: [\n          { path: '',           redirectTo: 'basics', pathMatch: 'full' },\n          { path: 'basics',     loadComponent: () => import('./lesson/lesson.component').then(m => m.LessonComponent), data: { lessonId: 'basics' } },\n          { path: 'components', loadComponent: () => import('./lesson/lesson.component').then(m => m.LessonComponent), data: { lessonId: 'components' } },\n        ],\n      },\n    ],\n  },\n];\n\n// ── shell.component.html ──────────────────────────────────\n// <app-sidebar />          ← stays mounted, never re-rendered\n// <app-header  />          ← stays mounted, never re-rendered\n// <main>\n//   <router-outlet />      ← only this swaps on navigation\n// </main>",
+      "explanation": "The key insight: ShellComponent renders ONCE and stays alive for the entire session. Only the <router-outlet> content changes. This makes transitions faster and preserves sidebar state (scroll position, open/closed items)."
+    },
+    {
+      "type": "diagram",
+      "title": "Shell Pattern — Nested Routes",
+      "svg": "<svg viewBox='0 0 640 300' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='300' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>SHELL PATTERN — NESTED ROUTER-OUTLET</text><rect x='20' y='44' width='600' height='238' rx='10' fill='#1e293b' stroke='#334155' stroke-width='1.5'/><text x='40' y='66' fill='#64748b' font-size='10' font-weight='600'>ShellComponent (parent route — stays mounted)</text><rect x='30' y='74' width='140' height='196' rx='8' fill='#1e3a5f' opacity='0.5'/><rect x='30' y='74' width='140' height='196' rx='8' fill='none' stroke='#3b82f6' stroke-width='1'/><text x='100' y='96' text-anchor='middle' fill='#60a5fa' font-size='11' font-weight='600'>Sidebar</text><text x='100' y='112' text-anchor='middle' fill='#64748b' font-size='9'>never re-renders</text><text x='100' y='130' text-anchor='middle' fill='#475569' font-size='9'>Home</text><text x='100' y='146' text-anchor='middle' fill='#475569' font-size='9'>Learn ▾</text><text x='100' y='162' text-anchor='middle' fill='#475569' font-size='9'>  └ Basics</text><text x='100' y='178' text-anchor='middle' fill='#475569' font-size='9'>  └ Components</text><text x='100' y='194' text-anchor='middle' fill='#475569' font-size='9'>Topics</text><text x='100' y='210' text-anchor='middle' fill='#475569' font-size='9'>Playground</text><rect x='180' y='74' width='430' height='40' rx='6' fill='#065f46' opacity='0.2'/><rect x='180' y='74' width='430' height='40' rx='6' fill='none' stroke='#10b981' stroke-width='1'/><text x='395' y='98' text-anchor='middle' fill='#34d399' font-size='11' font-weight='600'>Header — never re-renders</text><rect x='180' y='124' width='430' height='146' rx='6' fill='#DD0031' opacity='0.05'/><rect x='180' y='124' width='430' height='146' rx='6' fill='none' stroke='#DD0031' stroke-width='1.5' stroke-dasharray='6,3'/><text x='395' y='146' text-anchor='middle' fill='#DD0031' font-size='10' font-weight='600'>&lt;router-outlet&gt; — swaps on every navigation</text><rect x='196' y='158' width='398' height='100' rx='6' fill='#1e293b'/><text x='395' y='188' text-anchor='middle' fill='#94a3b8' font-size='13' font-weight='700'>HomeComponent</text><text x='395' y='208' text-anchor='middle' fill='#64748b' font-size='10'>← rendered at /</text><text x='395' y='228' text-anchor='middle' fill='#475569' font-size='9'>Navigating to /topics replaces this</text><text x='395' y='244' text-anchor='middle' fill='#475569' font-size='9'>with TopicsComponent — sidebar stays</text></svg>",
+      "caption": "The shell renders once. Only the <router-outlet> content changes on navigation — sidebar state, scroll position, and header are preserved across all page navigations."
+    },
+    {
+      "type": "text",
+      "title": "Route Guards — Protecting Routes",
+      "content": "Route guards are functions that run before a route is activated. They can allow or deny access, or redirect the user to another route.\n\nThe modern approach uses functional guards (CanActivateFn) — just a function, no class needed.\n\nCommon guard types:\n• canActivate  — can the user enter this route?\n• canDeactivate — can the user leave this route? (unsaved changes warning)\n• canMatch     — should this route be considered at all? (A/B testing, feature flags)\n• resolve      — pre-load data before the route activates\n\nGuards return boolean, UrlTree (redirect), or a Promise/Observable of either."
+    },
+    {
+      "type": "code",
+      "title": "Functional Route Guard",
+      "filename": "auth.guard.ts",
+      "language": "typescript",
+      "code": "import { inject }          from '@angular/core';\nimport { CanActivateFn, Router } from '@angular/router';\nimport { AuthService }     from '../services/auth.service';\n\n// ── ✓ Modern: functional guard (no class needed) ──────────\nexport const authGuard: CanActivateFn = (route, state) => {\n  const auth   = inject(AuthService);\n  const router = inject(Router);\n\n  if (auth.isLoggedIn()) {\n    return true;   // ✓ allow navigation\n  }\n\n  // ✗ deny and redirect to login, preserving the intended URL\n  return router.createUrlTree(['/login'], {\n    queryParams: { returnUrl: state.url }\n  });\n};\n\n// ── Usage in routes ────────────────────────────────────────\n// {\n//   path: 'dashboard',\n//   canActivate: [authGuard],\n//   loadComponent: () => import('./dashboard.component')...\n// }\n\n// ── Guard with role check ─────────────────────────────────\nexport const adminGuard: CanActivateFn = () => {\n  const auth   = inject(AuthService);\n  const router = inject(Router);\n\n  if (auth.hasRole('admin')) return true;\n  return router.createUrlTree(['/forbidden']);\n};\n\n// ── Unsaved changes guard ─────────────────────────────────\nexport const unsavedChangesGuard: CanDeactivateFn<{ hasUnsaved: () => boolean }> =\n  (component) => {\n    if (!component.hasUnsaved()) return true;\n    return confirm('You have unsaved changes. Leave anyway?');\n  };",
+      "explanation": "inject() works inside functional guards — Angular runs guards in an injection context. Returning a UrlTree instead of false triggers a redirect, which is better UX than a silent navigation block."
+    },
+    {
+      "type": "text",
+      "title": "Programmatic Navigation — Router.navigate()",
+      "content": "Sometimes you need to navigate from TypeScript code — after a form submission, after a login, or in response to a service event. For this, inject the Router service and call navigate() or navigateByUrl().\n\n• router.navigate(['/user', id]) — array form, recommended\n• router.navigateByUrl('/user/42') — string URL, simple but less flexible\n• router.navigate(['..', 'sibling'], { relativeTo: route }) — relative navigation\n• { replaceUrl: true } — replaces the current history entry (login flow)\n• { queryParams: {...} } — adds query string parameters\n• { fragment: 'section' } — adds a hash fragment"
+    },
+    {
+      "type": "code",
+      "title": "Programmatic Navigation",
+      "filename": "login.component.ts",
+      "language": "typescript",
+      "code": "import { Component, inject, signal } from '@angular/core';\nimport { Router, ActivatedRoute } from '@angular/router';\nimport { FormsModule } from '@angular/forms';\nimport { AuthService } from './auth.service';\n\n@Component({\n  selector: 'app-login',\n  standalone: true,\n  imports: [FormsModule],\n  template: `\n    <form (submit)=\"onSubmit($event)\">\n      <input [(ngModel)]=\"email\"    name=\"email\"    type=\"email\" />\n      <input [(ngModel)]=\"password\" name=\"password\" type=\"password\" />\n      <button [disabled]=\"loading()\" type=\"submit\">\n        {{ loading() ? 'Signing in...' : 'Sign In' }}\n      </button>\n      @if (error()) { <p class=\"error\">{{ error() }}</p> }\n    </form>\n  `,\n})\nexport class LoginComponent {\n  private auth    = inject(AuthService);\n  private router  = inject(Router);\n  private route   = inject(ActivatedRoute);   // to read ?returnUrl=\n\n  email    = '';\n  password = '';\n  loading  = signal(false);\n  error    = signal('');\n\n  async onSubmit(e: Event): Promise<void> {\n    e.preventDefault();\n    this.loading.set(true);\n    this.error.set('');\n\n    try {\n      await this.auth.login(this.email, this.password);\n\n      // Read the returnUrl from the query string (set by authGuard)\n      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';\n\n      // Navigate after login — replaceUrl so back button skips login page\n      await this.router.navigateByUrl(returnUrl, { replaceUrl: true });\n\n    } catch (err) {\n      this.error.set('Invalid email or password');\n      this.loading.set(false);\n    }\n  }\n\n  // ── Other navigate() patterns ─────────────────────────────\n  goToProfile(id: number): void {\n    this.router.navigate(['/user', id]);\n  }\n\n  goToSearch(query: string): void {\n    this.router.navigate(['/search'], { queryParams: { q: query } });\n  }\n\n  // Relative navigation (from /dashboard → /dashboard/settings)\n  goToSettings(): void {\n    this.router.navigate(['settings'], { relativeTo: this.route });\n  }\n}",
+      "explanation": "{ replaceUrl: true } in navigateByUrl is important for auth flows — without it, pressing the back button after login takes the user back to the login page, which is confusing."
+    },
+    {
+      "type": "tip",
+      "content": "Always use RouterLink in templates and Router.navigate() in TypeScript — never set window.location.href directly. Using window.location causes a full browser reload, which destroys all Angular state, services, and component trees. The Angular router keeps all of this alive."
+    },
+    {
+      "type": "code",
+      "title": "Reading Route Data — withViewTransitions Bonus",
+      "filename": "app.routes.extended.ts",
+      "language": "typescript",
+      "code": "import { Routes } from '@angular/router';\n\nexport const routes: Routes = [\n  {\n    path: 'lesson/:lessonId',\n    loadComponent: () =>\n      import('./lesson/lesson.component').then(m => m.LessonComponent),\n\n    // ── Static data attached to this route ──────────────────\n    // With withComponentInputBinding(), these are received as inputs\n    data: {\n      breadcrumb: 'Lesson',\n      showSidebar: true,\n    },\n\n    // ── Route title (can be a string or a resolver function) ─\n    title: 'Angular Lesson',\n    // title: lessonTitleResolver,  ← dynamic title from data\n  },\n];\n\n// ── Receiving data and params in the component ────────────\n// @Component(...)\n// class LessonComponent {\n//   lessonId   = input.required<string>();  ← from :lessonId param\n//   breadcrumb = input<string>();           ← from data.breadcrumb\n//   showSidebar = input<boolean>();         ← from data.showSidebar\n// }\n\n// ── View Transitions API — add to global styles ────────────\n// :root { view-transition-name: none; }\n// ::view-transition-old(root) { animation: slide-out 200ms ease; }\n// ::view-transition-new(root) { animation: slide-in 200ms ease; }\n// @keyframes slide-out { from { opacity: 1 } to { opacity: 0 } }\n// @keyframes slide-in  { from { opacity: 0 } to { opacity: 1 } }",
+      "explanation": "withComponentInputBinding() maps BOTH route params AND route data to inputs. This means a single component can receive its configuration entirely through its signal inputs — no ActivatedRoute injection needed in most cases."
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "How do you set up the Angular Router in a standalone app?",
+      "a": "Call provideRouter(routes) inside the providers array of ApplicationConfig in app.config.ts. Pass the routes array as the first argument. You can chain feature functions: withComponentInputBinding() to map route params to component inputs, withViewTransitions() for smooth page transitions, withDebugTracing() for development logging, and withHashLocation() for static hosting. This replaces the old RouterModule.forRoot(routes) used in NgModule-based apps."
+    },
+    {
+      "q": "What is lazy loading and how do you implement it with standalone components?",
+      "a": "Lazy loading defers downloading a component's JavaScript until the user first navigates to its route. With standalone components, replace component: MyComponent with loadComponent: () => import('./my.component').then(m => m.MyComponent). Angular's bundler creates a separate JavaScript chunk for that component. For an entire feature area, use loadChildren: () => import('./feature/feature.routes').then(m => m.featureRoutes) to bundle all the feature's components together."
+    },
+    {
+      "q": "What does withComponentInputBinding() do and how do you use route parameters with it?",
+      "a": "withComponentInputBinding() (passed to provideRouter()) makes Angular automatically bind route parameters, query parameters, and route data to component inputs by name. With it enabled, a route defined as { path: 'user/:id' } will set the component's input named 'id' to the value from the URL. Declare it as id = input.required<string>() in the component class. Without this feature, you would need to inject ActivatedRoute and subscribe to paramMap manually."
+    },
+    {
+      "q": "What is the difference between RouterLink and a plain <a href>?",
+      "a": "A plain <a href> triggers a full browser reload — the page is fetched from the server, the JavaScript re-executes, all Angular services are destroyed and recreated. RouterLink uses Angular's router to navigate purely on the client — no server request, no reload, all state preserved. RouterLink also supports the routerLinkActive directive for CSS class toggling, array-form paths, and query params. Always use RouterLink in Angular templates."
+    },
+    {
+      "q": "What are nested routes and what problem do they solve?",
+      "a": "Nested (child) routes define a hierarchy where a parent component provides a persistent layout and a <router-outlet> that child routes render into. This solves the layout duplication problem — the sidebar, header, and navigation do not have to be re-rendered or re-mounted on every page navigation. Only the content area (inside the outlet) swaps. The parent route is configured with a children array; the parent component must have its own <router-outlet> in its template."
+    },
+    {
+      "q": "What is a route guard and how do you create a functional guard?",
+      "a": "A route guard is a function that runs before a route activates and returns true (allow), false (deny), or a UrlTree (redirect). Create a functional guard by exporting a CanActivateFn: export const authGuard: CanActivateFn = (route, state) => { const auth = inject(AuthService); return auth.isLoggedIn() || router.createUrlTree(['/login']); }. Add it to the route with canActivate: [authGuard]. inject() works inside functional guards because Angular runs them in an injection context."
+    },
+    {
+      "q": "What is the difference between router.navigate() and router.navigateByUrl()?",
+      "a": "router.navigate(['/path', param]) takes an array of path segments and an options object — it builds the URL for you and is useful for dynamic segments. router.navigateByUrl('/path/42') takes a pre-built URL string and is simpler but less flexible. Both accept options like { replaceUrl: true } (replaces history instead of pushing) and { queryParams: {...} }. navigate() is generally preferred because the array form is more composable and avoids string concatenation bugs."
+    },
+    {
+      "q": "When would you use the data property on a route and how do you read it?",
+      "a": "The data property attaches static metadata to a route: { path: 'admin', data: { breadcrumb: 'Admin', roles: ['admin'] } }. Common uses: breadcrumb labels, required roles, feature flags, page titles. With withComponentInputBinding(), route data is automatically bound to component inputs by matching key names. Without it, inject ActivatedRoute and read route.snapshot.data['breadcrumb'] or subscribe to route.data observable for reactive updates."
+    },
+    {
+      "q": "How does the wildcard route work and why must it be last?",
+      "a": "The wildcard route { path: '**', ... } matches any URL that didn't match any previous route — it is the 404 catch-all. Angular evaluates routes from top to bottom and uses the first match. If the wildcard were placed first, it would match every URL and no other route would ever activate. Placing it last ensures all specific routes are checked first and only unmatched URLs reach the wildcard."
+    },
+    {
+      "q": "What is the difference between pathMatch: 'full' and pathMatch: 'prefix'?",
+      "a": "pathMatch: 'prefix' (the default) matches if the route's path matches the beginning of the URL. pathMatch: 'full' only matches if the route's path matches the entire URL. For redirect routes and the empty path '', 'full' is almost always required. Without it, { path: '', redirectTo: '/home' } with prefix matching would match EVERY URL (since every URL starts with ''), causing an infinite redirect loop. Always use pathMatch: 'full' on empty-path redirects."
+    }
+  ]
+}

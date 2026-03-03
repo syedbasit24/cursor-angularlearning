@@ -1,0 +1,132 @@
+{
+  "id": "basics",
+  "title": "Angular Basics",
+  "subtitle": "Understand what Angular is and how it works",
+  "description": "Learn the core ideas behind Angular — what it is, how it compiles, its key building blocks, and how to write your very first component.",
+  "icon": "⭐",
+  "xp": 50,
+  "difficulty": "Beginner",
+  "estimatedTime": "15 min",
+  "nextLesson": { "id": "components", "title": "Components", "route": "/learn/components" },
+  "keyPoints": [
+    "Angular is a TypeScript-based framework for building Single Page Applications (SPAs)",
+    "Every Angular app is built from Components — TypeScript class + HTML template + optional styles",
+    "The @Component decorator configures how a component looks and behaves",
+    "Angular 17+ uses Standalone Components — no NgModules required",
+    "Angular compiles templates at build time for maximum performance",
+    "The CLI creates a production-ready project in one command"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "What is Angular?",
+      "content": "Angular is an open-source, TypeScript-based web framework built and maintained by Google. It is used to build Single Page Applications (SPAs) — web apps that load once in the browser and then dynamically update the view without full page reloads.\n\nAngular provides a complete, opinionated solution: routing, forms, HTTP, animations, testing — all built in. This makes it ideal for large, enterprise-scale applications where consistency and maintainability matter."
+    },
+    {
+      "type": "note",
+      "content": "Angular (v2+) is completely different from AngularJS (v1). AngularJS used JavaScript and a digest cycle. Angular uses TypeScript, Ahead-of-Time (AOT) compilation, and a much faster change detection system based on Zone.js (and now Signals)."
+    },
+    {
+      "type": "text",
+      "title": "Angular Architecture at a Glance",
+      "content": "An Angular application is a tree of Components. Each component controls a section of the UI. Components communicate through Inputs (parent → child), Outputs (child → parent), and Services (shared state/logic).\n\nThe key building blocks are:\n• Components — the UI building blocks (class + template + styles)\n• Templates — HTML extended with Angular syntax\n• Directives — extend HTML with custom behavior\n• Services — reusable business logic and shared state\n• Dependency Injection — Angular's system for providing services to components\n• Router — navigates between views without page reloads"
+    },
+    {
+      "type": "diagram",
+      "title": "Angular App Structure",
+      "svg": "<svg viewBox='0 0 600 320' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='600' height='320' rx='12' fill='#0f172a'/><text x='300' y='30' text-anchor='middle' fill='#94a3b8' font-size='12' font-weight='600' letter-spacing='2'>ANGULAR APPLICATION TREE</text><rect x='220' y='50' width='160' height='44' rx='8' fill='#DD0031' opacity='0.15'/><rect x='220' y='50' width='160' height='44' rx='8' fill='none' stroke='#DD0031' stroke-width='1.5'/><text x='300' y='68' text-anchor='middle' fill='#DD0031' font-size='13' font-weight='700'>App Component</text><text x='300' y='84' text-anchor='middle' fill='#94a3b8' font-size='10'>(Root)</text><line x1='300' y1='94' x2='160' y2='134' stroke='#334155' stroke-width='1.5'/><line x1='300' y1='94' x2='300' y2='134' stroke='#334155' stroke-width='1.5'/><line x1='300' y1='94' x2='440' y2='134' stroke='#334155' stroke-width='1.5'/><rect x='90' y='134' width='140' height='44' rx='8' fill='#1e40af' opacity='0.15'/><rect x='90' y='134' width='140' height='44' rx='8' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='160' y='152' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='600'>Header</text><text x='160' y='168' text-anchor='middle' fill='#94a3b8' font-size='10'>Component</text><rect x='230' y='134' width='140' height='44' rx='8' fill='#065f46' opacity='0.2'/><rect x='230' y='134' width='140' height='44' rx='8' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='300' y='152' text-anchor='middle' fill='#34d399' font-size='12' font-weight='600'>Sidebar</text><text x='300' y='168' text-anchor='middle' fill='#94a3b8' font-size='10'>Component</text><rect x='370' y='134' width='140' height='44' rx='8' fill='#4c1d95' opacity='0.2'/><rect x='370' y='134' width='140' height='44' rx='8' fill='none' stroke='#8b5cf6' stroke-width='1.5'/><text x='440' y='152' text-anchor='middle' fill='#a78bfa' font-size='12' font-weight='600'>Main</text><text x='440' y='168' text-anchor='middle' fill='#94a3b8' font-size='10'>Component</text><line x1='160' y1='178' x2='130' y2='218' stroke='#334155' stroke-width='1.5'/><line x1='160' y1='178' x2='190' y2='218' stroke='#334155' stroke-width='1.5'/><rect x='60' y='218' width='120' height='40' rx='6' fill='#1e3a5f' opacity='0.5'/><rect x='60' y='218' width='120' height='40' rx='6' fill='none' stroke='#475569' stroke-width='1'/><text x='120' y='241' text-anchor='middle' fill='#94a3b8' font-size='11'>Logo Component</text><rect x='130' y='218' width='120' height='40' rx='6' fill='#1e3a5f' opacity='0.5'/><rect x='130' y='218' width='120' height='40' rx='6' fill='none' stroke='#475569' stroke-width='1'/><text x='190' y='241' text-anchor='middle' fill='#94a3b8' font-size='11'>Nav Component</text><rect x='20' y='278' width='560' height='28' rx='6' fill='#1e293b'/><text x='300' y='296' text-anchor='middle' fill='#64748b' font-size='11'>Services (ThemeService, AuthService...) injected anywhere via DI</text></svg>",
+      "caption": "Components form a tree. Services are injected via Angular's DI system."
+    },
+    {
+      "type": "text",
+      "title": "Your First Angular Component",
+      "content": "A component is just a TypeScript class decorated with @Component. The decorator tells Angular:\n• What HTML tag to use (selector)\n• What the template looks like (template or templateUrl)\n• What styles to apply (styles or styleUrl)"
+    },
+    {
+      "type": "code",
+      "title": "Minimal Component",
+      "filename": "hello.component.ts",
+      "language": "typescript",
+      "code": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-hello',          // used as <app-hello /> in templates\n  standalone: true,               // no NgModule needed (Angular 17+)\n  template: `\n    <h1>Hello, {{ name }}!</h1>   <!-- {{ }} = interpolation -->\n    <p>Welcome to Angular.</p>\n  `,\n})\nexport class HelloComponent {\n  name = 'Angular';               // property bound to the template\n}",
+      "explanation": "The @Component decorator is what turns a plain TypeScript class into an Angular component. The selector defines the custom HTML tag you'll use to render it."
+    },
+    {
+      "type": "code",
+      "title": "Using the Component",
+      "filename": "app.html",
+      "language": "html",
+      "code": "<!-- In any parent component's template -->\n<app-hello />\n\n<!-- Angular replaces this tag with the HelloComponent's template -->\n<!-- Output: <h1>Hello, Angular!</h1> -->",
+      "explanation": "You use a component the same way you use a native HTML element — just with your custom selector tag."
+    },
+    {
+      "type": "tip",
+      "content": "Angular 17+ defaults all components to standalone: true. You no longer need NgModules (AppModule, SharedModule, etc.). Each component declares its own imports[] — the other components, directives, and pipes it needs."
+    },
+    {
+      "type": "text",
+      "title": "Angular Project Structure",
+      "content": "When you run 'ng new my-app', Angular CLI generates a well-structured project. Understanding this structure is key to navigating any Angular codebase."
+    },
+    {
+      "type": "code",
+      "title": "Generated Project Structure",
+      "filename": "folder-structure",
+      "language": "bash",
+      "code": "my-app/\n├── src/\n│   ├── app/\n│   │   ├── app.ts           ← Root component class\n│   │   ├── app.html         ← Root component template\n│   │   ├── app.routes.ts    ← Route definitions\n│   │   └── app.config.ts    ← App-level providers (DI)\n│   ├── main.ts              ← Entry point: bootstraps the app\n│   ├── styles.scss          ← Global styles\n│   └── index.html           ← Single HTML file loaded by browser\n├── public/                  ← Static assets (images, fonts, JSON)\n├── angular.json             ← CLI build configuration\n├── tsconfig.json            ← TypeScript configuration\n└── package.json             ← Dependencies"
+    },
+    {
+      "type": "code",
+      "title": "main.ts — The Entry Point",
+      "filename": "main.ts",
+      "language": "typescript",
+      "code": "import { bootstrapApplication } from '@angular/platform-browser';\nimport { appConfig } from './app/app.config';\nimport { App } from './app/app';\n\n// bootstrapApplication() starts the Angular app.\n// It takes the ROOT component and the app configuration.\nbootstrapApplication(App, appConfig)\n  .catch(err => console.error(err));",
+      "explanation": "main.ts is the single entry point. Angular compiles everything from here. In production, the entire app becomes optimized static files."
+    },
+    {
+      "type": "warning",
+      "content": "Never put business logic in main.ts. It should only bootstrap the app. All your code belongs inside the src/app/ folder, organized into features, core, and shared."
+    },
+    {
+      "type": "text",
+      "title": "How Angular Compiles Your App",
+      "content": "Angular uses Ahead-of-Time (AOT) compilation. This means Angular compiles your templates to optimized JavaScript at BUILD TIME — not in the browser at runtime.\n\nBenefits:\n• Faster rendering (no template parsing in browser)\n• Template errors caught at build time (not runtime)\n• Smaller bundle (Angular compiler not shipped to browser)\n• Better security (templates already compiled)"
+    },
+    {
+      "type": "code",
+      "title": "CLI Commands You'll Use Daily",
+      "filename": "terminal",
+      "language": "bash",
+      "code": "# Create a new project\nng new my-app --standalone\n\n# Start development server (live reload)\nng serve\n\n# Generate a new component\nng generate component features/home\n# or shorthand:\nng g c features/home\n\n# Generate a service\nng g s core/services/auth\n\n# Build for production\nng build\n\n# Run tests\nng test"
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "What is Angular?",
+      "a": "Angular is an open-source, TypeScript-based web framework developed and maintained by Google. It is used to build Single Page Applications (SPAs) that load once and dynamically update without full page reloads. Angular provides a complete solution including routing, forms, HTTP client, animations, and testing tools."
+    },
+    {
+      "q": "What is the difference between Angular and AngularJS?",
+      "a": "AngularJS (v1) was released in 2010 and used JavaScript with a digest cycle for change detection. Angular (v2+, released 2016) is a complete rewrite using TypeScript, component-based architecture, Ahead-of-Time compilation, and a hierarchical Dependency Injection system. They are fundamentally different frameworks."
+    },
+    {
+      "q": "What is a Component in Angular?",
+      "a": "A Component is the fundamental building block of an Angular application. It consists of: (1) a TypeScript class with the business logic, (2) an HTML template that defines the view, and (3) optional CSS styles. It is decorated with @Component which configures the selector, template, and styles."
+    },
+    {
+      "q": "What is the @Component decorator?",
+      "a": "The @Component decorator is a function from @angular/core that marks a TypeScript class as an Angular component. It accepts a metadata object with: selector (the HTML tag name), template or templateUrl (the view), styles or styleUrl (the CSS), and imports[] (other standalone components/directives it uses)."
+    },
+    {
+      "q": "What is AOT compilation in Angular?",
+      "a": "Ahead-of-Time (AOT) compilation converts Angular HTML templates and TypeScript code into efficient JavaScript at BUILD TIME, before the browser loads the app. Benefits include: faster rendering (no template compilation in browser), catching template errors at build time, smaller bundles, and better security."
+    },
+    {
+      "q": "What are Standalone Components?",
+      "a": "Standalone Components (introduced in Angular 14, default in Angular 17+) are components that don't require an NgModule. They declare their own dependencies in the imports[] array of the @Component decorator. This simplifies the architecture and makes components more self-contained and portable."
+    },
+    {
+      "q": "What is the purpose of main.ts?",
+      "a": "main.ts is the entry point of an Angular application. It calls bootstrapApplication() with the root component (usually AppComponent) and the application configuration (appConfig). This starts the Angular framework, initializes all providers, and renders the root component into the DOM."
+    }
+  ]
+}

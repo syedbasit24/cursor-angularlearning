@@ -1,0 +1,190 @@
+{
+  "id": "components",
+  "title": "Components",
+  "subtitle": "The building blocks of every Angular app",
+  "description": "Master Angular components — the fundamental UI unit. Learn @Component decorator, templates, lifecycle hooks, the modern input()/output() signal API, ViewChild, and best practices.",
+  "icon": "🧩",
+  "xp": 120,
+  "difficulty": "Beginner",
+  "estimatedTime": "25 min",
+  "prevLesson": { "id": "basics", "title": "Angular Basics", "route": "/learn/basics" },
+  "nextLesson": { "id": "data-binding", "title": "Data Binding", "route": "/learn/data-binding" },
+  "keyPoints": [
+    "A component = TypeScript class + @Component decorator + template + optional styles",
+    "selector defines the HTML tag used to place the component in other templates",
+    "standalone: true removes the need for NgModules (Angular 17+ default)",
+    "Lifecycle hooks let you run code at specific stages: init, change, destroy",
+    "input() and output() are the modern, signal-based way to communicate between components",
+    "ViewChild gives you a direct reference to a child element or component in the template",
+    "Smart components manage state; Dumb components just render data via inputs"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "What Is a Component?",
+      "content": "A component is the fundamental building block of an Angular application. Think of it as a custom HTML element that bundles three things together:\n\n• A TypeScript class — holds the data (properties) and behaviour (methods)\n• A template — the HTML that describes what renders on screen\n• Optional styles — scoped CSS that only applies inside this component\n\nAngular apps are just trees of components. The root component (AppComponent) contains other components, which contain more components, all the way down to the leaf elements."
+    },
+    {
+      "type": "diagram",
+      "title": "Anatomy of a Component",
+      "svg": "<svg viewBox='0 0 620 300' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='620' height='300' rx='12' fill='#0f172a'/><text x='310' y='28' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>COMPONENT ANATOMY</text><rect x='30' y='48' width='560' height='60' rx='10' fill='#DD0031' opacity='0.12'/><rect x='30' y='48' width='560' height='60' rx='10' fill='none' stroke='#DD0031' stroke-width='1.5'/><text x='310' y='68' text-anchor='middle' fill='#DD0031' font-size='13' font-weight='700'>@Component Decorator</text><text x='310' y='86' text-anchor='middle' fill='#94a3b8' font-size='11'>selector · standalone · template / templateUrl · styles / styleUrl</text><line x1='150' y1='108' x2='150' y2='130' stroke='#334155' stroke-width='1.5' stroke-dasharray='4,3'/><line x1='310' y1='108' x2='310' y2='130' stroke='#334155' stroke-width='1.5' stroke-dasharray='4,3'/><line x1='470' y1='108' x2='470' y2='130' stroke='#334155' stroke-width='1.5' stroke-dasharray='4,3'/><rect x='40' y='130' width='220' height='70' rx='10' fill='#1e40af' opacity='0.15'/><rect x='40' y='130' width='220' height='70' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='150' y='155' text-anchor='middle' fill='#60a5fa' font-size='13' font-weight='700'>TypeScript Class</text><text x='150' y='172' text-anchor='middle' fill='#94a3b8' font-size='10'>Properties (data)</text><text x='150' y='188' text-anchor='middle' fill='#94a3b8' font-size='10'>Methods (behaviour)</text><rect x='200' y='130' width='220' height='70' rx='10' fill='#065f46' opacity='0.2'/><rect x='200' y='130' width='220' height='70' rx='10' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='310' y='155' text-anchor='middle' fill='#34d399' font-size='13' font-weight='700'>Template (HTML)</text><text x='310' y='172' text-anchor='middle' fill='#94a3b8' font-size='10'>Interpolation · Bindings</text><text x='310' y='188' text-anchor='middle' fill='#94a3b8' font-size='10'>Directives · Pipes</text><rect x='360' y='130' width='220' height='70' rx='10' fill='#4c1d95' opacity='0.2'/><rect x='360' y='130' width='220' height='70' rx='10' fill='none' stroke='#8b5cf6' stroke-width='1.5'/><text x='470' y='155' text-anchor='middle' fill='#a78bfa' font-size='13' font-weight='700'>Styles (CSS/SCSS)</text><text x='470' y='172' text-anchor='middle' fill='#94a3b8' font-size='10'>Scoped to component</text><text x='470' y='188' text-anchor='middle' fill='#94a3b8' font-size='10'>ViewEncapsulation</text><rect x='100' y='225' width='420' height='40' rx='8' fill='#1e293b'/><text x='310' y='249' text-anchor='middle' fill='#64748b' font-size='11'>Result → a custom HTML element  &lt;app-profile /&gt;  you can use anywhere</text></svg>",
+      "caption": "The @Component decorator glues the class, template, and styles into a reusable HTML element."
+    },
+    {
+      "type": "code",
+      "title": "A Complete Component Example",
+      "filename": "user-card.component.ts",
+      "language": "typescript",
+      "code": "import { Component, input, output } from '@angular/core';\n\n@Component({\n  selector: 'app-user-card',   // used as <app-user-card /> in templates\n  standalone: true,            // no NgModule needed (Angular 17+ default)\n  template: `\n    <div class=\"card\">\n      <img [src]=\"user().avatar\" [alt]=\"user().name\" />\n      <h2>{{ user().name }}</h2>\n      <p>{{ user().role }}</p>\n      <button (click)=\"onSelect()\">Select User</button>\n    </div>\n  `,\n  styles: [`\n    .card {\n      border: 1px solid #e2e8f0;\n      border-radius: 12px;\n      padding: 16px;\n      text-align: center;\n    }\n  `]\n})\nexport class UserCardComponent {\n  // input() — receives data FROM the parent component\n  user = input.required<{ name: string; role: string; avatar: string }>();\n\n  // output() — emits events TO the parent component\n  selected = output<string>();\n\n  onSelect(): void {\n    this.selected.emit(this.user().name);  // notify the parent\n  }\n}",
+      "explanation": "This component receives a user object via input() and emits a 'selected' event via output(). The parent controls the data; the component just displays it."
+    },
+    {
+      "type": "tip",
+      "content": "Component selectors always use a kebab-case prefix (app-, ui-, shared-) to avoid clashing with standard HTML elements. Angular CLI uses 'app-' by default and enforces this with a linting rule."
+    },
+    {
+      "type": "text",
+      "title": "The @Component Decorator — Every Option Explained",
+      "content": "The @Component decorator is a TypeScript decorator (a function that wraps a class) that tells Angular how to process the class as a component.\n\nThe most important options are:\n\n• selector — the custom HTML tag that places this component in a template\n• standalone: true — makes the component self-contained, no NgModule required\n• template / templateUrl — inline template string OR path to an .html file\n• styles / styleUrl — inline style array OR path to a .scss/.css file\n• imports — other standalone components/directives/pipes used in this template\n• changeDetection — ChangeDetectionStrategy.OnPush for performance optimization"
+    },
+    {
+      "type": "code",
+      "title": "@Component Decorator — All Key Options",
+      "filename": "example.component.ts",
+      "language": "typescript",
+      "code": "import { Component, ChangeDetectionStrategy } from '@angular/core';\nimport { RouterLink } from '@angular/router';\nimport { ButtonComponent } from '../shared/button.component';\n\n@Component({\n  // ① The HTML tag used to insert this component\n  selector: 'app-example',\n\n  // ② Standalone = no NgModule (recommended in Angular 17+)\n  standalone: true,\n\n  // ③ Which other standalone components/directives/pipes this template uses\n  imports: [RouterLink, ButtonComponent],\n\n  // ④a Inline template (good for small components)\n  template: `<h1>Hello</h1>`,\n\n  // ④b External template file (recommended for larger components)\n  // templateUrl: './example.component.html',\n\n  // ⑤a Inline styles (array of strings)\n  styles: [`h1 { color: red; }`],\n\n  // ⑤b External stylesheet\n  // styleUrl: './example.component.scss',\n\n  // ⑥ OnPush = only re-check when inputs change or events fire (better performance)\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class ExampleComponent {}\n",
+      "explanation": "standalone: true and ChangeDetectionStrategy.OnPush are both best-practice defaults for modern Angular."
+    },
+    {
+      "type": "text",
+      "title": "Lifecycle Hooks",
+      "content": "Angular calls specific methods on your component class at predictable points during its life. These are called lifecycle hooks. Implementing an interface (like OnInit) isn't strictly required, but it helps TypeScript catch typos.\n\nThe most commonly used hooks:\n\n• ngOnInit — runs once after inputs are first set. Use this for HTTP calls and initial setup.\n• ngOnChanges — runs whenever an @Input() changes. Use this to react to parent data.\n• ngAfterViewInit — runs after the component's view (and child views) are fully rendered. Use this to access ViewChild refs.\n• ngOnDestroy — runs just before the component is removed from the DOM. Use this to cancel subscriptions, clear timers, and clean up resources."
+    },
+    {
+      "type": "diagram",
+      "title": "Component Lifecycle",
+      "svg": "<svg viewBox='0 0 620 380' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='620' height='380' rx='12' fill='#0f172a'/><text x='310' y='28' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>COMPONENT LIFECYCLE HOOKS</text><rect x='220' y='42' width='180' height='38' rx='8' fill='#1e293b'/><rect x='220' y='42' width='180' height='38' rx='8' fill='none' stroke='#475569' stroke-width='1'/><text x='310' y='64' text-anchor='middle' fill='#64748b' font-size='12'>constructor()</text><line x1='310' y1='80' x2='310' y2='98' stroke='#334155' stroke-width='2' marker-end='url(#arr)'/><rect x='200' y='98' width='220' height='38' rx='8' fill='#DD0031' opacity='0.15'/><rect x='200' y='98' width='220' height='38' rx='8' fill='none' stroke='#DD0031' stroke-width='1.5'/><text x='310' y='120' text-anchor='middle' fill='#DD0031' font-size='12' font-weight='600'>ngOnChanges()</text><line x1='310' y1='136' x2='310' y2='154' stroke='#334155' stroke-width='2'/><rect x='200' y='154' width='220' height='38' rx='8' fill='#1e40af' opacity='0.2'/><rect x='200' y='154' width='220' height='38' rx='8' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='310' y='176' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='700'>ngOnInit() ★</text><line x1='310' y1='192' x2='310' y2='210' stroke='#334155' stroke-width='2'/><rect x='200' y='210' width='220' height='38' rx='8' fill='#1e293b'/><rect x='200' y='210' width='220' height='38' rx='8' fill='none' stroke='#475569' stroke-width='1'/><text x='310' y='232' text-anchor='middle' fill='#94a3b8' font-size='12'>ngDoCheck()</text><line x1='310' y1='248' x2='310' y2='266' stroke='#334155' stroke-width='2'/><rect x='200' y='266' width='220' height='38' rx='8' fill='#065f46' opacity='0.2'/><rect x='200' y='266' width='220' height='38' rx='8' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='310' y='288' text-anchor='middle' fill='#34d399' font-size='12' font-weight='600'>ngAfterViewInit() ★</text><line x1='310' y1='304' x2='310' y2='322' stroke='#334155' stroke-width='2'/><rect x='200' y='322' width='220' height='38' rx='8' fill='#4c1d95' opacity='0.2'/><rect x='200' y='322' width='220' height='38' rx='8' fill='none' stroke='#8b5cf6' stroke-width='1.5'/><text x='310' y='344' text-anchor='middle' fill='#a78bfa' font-size='12' font-weight='700'>ngOnDestroy() ★</text><text x='506' y='120' fill='#64748b' font-size='10'>on every input change</text><text x='506' y='176' fill='#60a5fa' font-size='10' font-weight='600'>★ most used</text><text x='506' y='288' fill='#34d399' font-size='10' font-weight='600'>★ for ViewChild</text><text x='506' y='344' fill='#a78bfa' font-size='10' font-weight='600'>★ for cleanup</text></svg>",
+      "caption": "★ marks the three lifecycle hooks you will use in almost every component."
+    },
+    {
+      "type": "code",
+      "title": "Using Lifecycle Hooks",
+      "filename": "timer.component.ts",
+      "language": "typescript",
+      "code": "import { Component, OnInit, OnDestroy, signal } from '@angular/core';\n\n@Component({\n  selector: 'app-timer',\n  standalone: true,\n  template: `<p>Elapsed: {{ seconds() }}s</p>`,\n})\nexport class TimerComponent implements OnInit, OnDestroy {\n  seconds = signal(0);\n\n  private intervalId!: ReturnType<typeof setInterval>;\n\n  // ngOnInit — runs once after the component is created\n  ngOnInit(): void {\n    console.log('TimerComponent initialised');\n\n    // Start a timer when the component appears\n    this.intervalId = setInterval(() => {\n      this.seconds.update(n => n + 1);\n    }, 1000);\n  }\n\n  // ngOnDestroy — runs just before the component is removed from the DOM\n  ngOnDestroy(): void {\n    console.log('TimerComponent destroyed — cleaning up');\n\n    // IMPORTANT: always cancel timers and subscriptions here\n    clearInterval(this.intervalId);\n  }\n}",
+      "explanation": "Forgetting ngOnDestroy is a very common source of memory leaks. Always cancel intervals, setTimeout calls, and Observable subscriptions here."
+    },
+    {
+      "type": "warning",
+      "content": "Never make HTTP calls inside the constructor. Use ngOnInit instead. The constructor should only be used for dependency injection (via inject()) and setting up signals/computed values."
+    },
+    {
+      "type": "text",
+      "title": "Component Inputs — Passing Data From Parent to Child",
+      "content": "Inputs are how a parent component sends data to a child component. Angular 17+ introduced the modern signal-based input() API which is now the recommended way.\n\nThere are two variants:\n• input<T>()           — optional input with a default value\n• input.required<T>() — required input; Angular will throw a compile-time error if not provided\n\nBoth return a Signal, so you read them using () in the template and class: user()."
+    },
+    {
+      "type": "code",
+      "title": "Modern Signal Inputs",
+      "filename": "avatar.component.ts",
+      "language": "typescript",
+      "code": "import { Component, input, computed } from '@angular/core';\n\n@Component({\n  selector: 'app-avatar',\n  standalone: true,\n  template: `\n    <div [style.width.px]=\"size()\" [style.height.px]=\"size()\">\n      <img [src]=\"src()\" [alt]=\"label()\" />\n      <span>{{ initials() }}</span>\n    </div>\n  `,\n})\nexport class AvatarComponent {\n  // ① Optional input — has a default value\n  size  = input<number>(40);           // default 40px\n\n  // ② Required input — must be provided by parent\n  src   = input.required<string>();    // will error at compile time if missing\n  label = input.required<string>();\n\n  // ③ computed() from inputs — auto-updates when inputs change\n  initials = computed(() =>\n    this.label()\n      .split(' ')\n      .map(w => w[0])\n      .join('')\n      .toUpperCase()\n  );\n}\n\n// ── Usage in parent template ──────────────────────────────\n// <app-avatar src=\"/photo.jpg\" label=\"Ada Lovelace\" [size]=\"64\" />",
+      "explanation": "input() returns a Signal — you read the value by calling it: size(). This means inputs work seamlessly with computed() and effect()."
+    },
+    {
+      "type": "text",
+      "title": "Component Outputs — Sending Events From Child to Parent",
+      "content": "Outputs are how a child component notifies its parent that something happened (a button was clicked, a form was submitted, a value changed).\n\nThe modern output() API replaces the old @Output() + EventEmitter pattern. An output is like a button on the child component that the parent can listen to."
+    },
+    {
+      "type": "code",
+      "title": "Modern output() API",
+      "filename": "confirm-dialog.component.ts",
+      "language": "typescript",
+      "code": "import { Component, input, output } from '@angular/core';\n\n// ── Child: ConfirmDialogComponent ────────────────────────\n@Component({\n  selector: 'app-confirm',\n  standalone: true,\n  template: `\n    <div class=\"dialog\">\n      <p>{{ message() }}</p>\n      <button (click)=\"confirm.emit(true)\">Yes</button>\n      <button (click)=\"confirm.emit(false)\">Cancel</button>\n    </div>\n  `,\n})\nexport class ConfirmDialogComponent {\n  message = input.required<string>();\n\n  // output<T>() — emits a value of type T to the parent\n  confirm = output<boolean>();\n}\n\n// ── Parent: AppComponent ─────────────────────────────────\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [ConfirmDialogComponent],\n  template: `\n    <app-confirm\n      message=\"Are you sure you want to delete?\"\n      (confirm)=\"onConfirm($event)\"        <!-- (output name) -->\n    />\n  `,\n})\nexport class AppComponent {\n  onConfirm(result: boolean): void {\n    if (result) {\n      console.log('User confirmed — deleting...');\n    }\n  }\n}",
+      "explanation": "(confirm) in the parent template listens to the output named 'confirm'. $event holds the emitted boolean value."
+    },
+    {
+      "type": "diagram",
+      "title": "Component Communication Flow",
+      "svg": "<svg viewBox='0 0 620 240' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='620' height='240' rx='12' fill='#0f172a'/><text x='310' y='28' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>PARENT ↔ CHILD COMMUNICATION</text><rect x='60' y='50' width='200' height='140' rx='12' fill='#1e40af' opacity='0.1'/><rect x='60' y='50' width='200' height='140' rx='12' fill='none' stroke='#3b82f6' stroke-width='2'/><text x='160' y='78' text-anchor='middle' fill='#60a5fa' font-size='13' font-weight='700'>Parent Component</text><text x='160' y='100' text-anchor='middle' fill='#94a3b8' font-size='11'>holds data</text><text x='160' y='118' text-anchor='middle' fill='#94a3b8' font-size='10'>userName = signal('Ada')</text><text x='160' y='148' text-anchor='middle' fill='#94a3b8' font-size='10'>(selected)=&quot;handle($event)&quot;</text><rect x='360' y='50' width='200' height='140' rx='12' fill='#065f46' opacity='0.15'/><rect x='360' y='50' width='200' height='140' rx='12' fill='none' stroke='#10b981' stroke-width='2'/><text x='460' y='78' text-anchor='middle' fill='#34d399' font-size='13' font-weight='700'>Child Component</text><text x='460' y='100' text-anchor='middle' fill='#94a3b8' font-size='11'>displays data</text><text x='460' y='118' text-anchor='middle' fill='#94a3b8' font-size='10'>name = input.required()</text><text x='460' y='148' text-anchor='middle' fill='#94a3b8' font-size='10'>selected = output()</text><path d='M260 95 L360 95' stroke='#3b82f6' stroke-width='2' marker-end='url(#bl)'/><text x='310' y='88' text-anchor='middle' fill='#60a5fa' font-size='10' font-weight='700'>[name]=&quot;userName()&quot;</text><text x='310' y='100' text-anchor='middle' fill='#64748b' font-size='9'>INPUT — data flows down</text><path d='M360 145 L260 145' stroke='#10b981' stroke-width='2' marker-end='url(#gr)'/><text x='310' y='138' text-anchor='middle' fill='#34d399' font-size='10' font-weight='700'>(selected)=&quot;onSel($event)&quot;</text><text x='310' y='152' text-anchor='middle' fill='#64748b' font-size='9'>OUTPUT — events bubble up</text><defs><marker id='bl' markerWidth='8' markerHeight='6' refX='6' refY='3' orient='auto'><path d='M0,0 L8,3 L0,6 Z' fill='#3b82f6'/></marker><marker id='gr' markerWidth='8' markerHeight='6' refX='6' refY='3' orient='auto'><path d='M0,0 L8,3 L0,6 Z' fill='#10b981'/></marker></defs><text x='310' y='218' text-anchor='middle' fill='#475569' font-size='10'>For deeply nested components, use a shared Service instead of long input/output chains</text></svg>",
+      "caption": "Data always flows DOWN via inputs. Events always bubble UP via outputs. This is one-way data flow."
+    },
+    {
+      "type": "text",
+      "title": "ViewChild — Accessing Child Elements Directly",
+      "content": "Sometimes you need a direct reference to a child element or component from the parent class — for example, to focus an input, read a canvas size, or call a method on a child component.\n\nViewChild gives you that reference. It is only available after ngAfterViewInit runs — Angular must render the view before you can access its elements."
+    },
+    {
+      "type": "code",
+      "title": "ViewChild Example",
+      "filename": "search-box.component.ts",
+      "language": "typescript",
+      "code": "import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';\n\n@Component({\n  selector: 'app-search-box',\n  standalone: true,\n  template: `\n    <!-- #searchInput is a template reference variable -->\n    <input #searchInput type=\"text\" placeholder=\"Search...\" />\n    <button (click)=\"focusInput()\">Focus</button>\n  `,\n})\nexport class SearchBoxComponent implements AfterViewInit {\n  // @ViewChild reads the element with #searchInput from the template\n  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;\n\n  // Only available AFTER the view is rendered\n  ngAfterViewInit(): void {\n    // Auto-focus the input when the component loads\n    this.searchInput.nativeElement.focus();\n  }\n\n  focusInput(): void {\n    this.searchInput.nativeElement.focus();\n  }\n}",
+      "explanation": "The ! after searchInput tells TypeScript 'I know this might be undefined initially, trust me'. Use ViewChild only in ngAfterViewInit or later."
+    },
+    {
+      "type": "note",
+      "content": "Prefer template-driven communication (inputs, outputs, services) over ViewChild when possible. ViewChild creates tight coupling between parent and child, making components harder to test and reuse. Use it only when you genuinely need DOM-level access."
+    },
+    {
+      "type": "text",
+      "title": "Smart vs Dumb Components (Container vs Presentational)",
+      "content": "One of the most important architectural patterns in Angular is splitting components into two types:\n\n• Smart components (Containers) — know about services, manage state, fetch data, handle routing. They pass data DOWN to dumb components and react to events bubbling UP.\n\n• Dumb components (Presentational) — know nothing about services or state. They just receive data via inputs and emit events via outputs. They are pure UI — easy to test, reuse, and understand.\n\nAs a rule of thumb: if a component calls inject() to get a service, it is probably a smart component."
+    },
+    {
+      "type": "code",
+      "title": "Smart vs Dumb Pattern",
+      "filename": "smart-vs-dumb.ts",
+      "language": "typescript",
+      "code": "// ── SMART component — knows about UserService ────────────\n@Component({\n  selector: 'app-user-page',\n  standalone: true,\n  imports: [UserListComponent],\n  template: `\n    @if (isLoading()) {\n      <p>Loading...</p>\n    } @else {\n      <!-- Passes data DOWN, listens to events UP -->\n      <app-user-list\n        [users]=\"users()\"\n        (delete)=\"deleteUser($event)\"\n      />\n    }\n  `,\n})\nexport class UserPageComponent {\n  private userService = inject(UserService);  // knows about services\n  users     = this.userService.users;\n  isLoading = this.userService.isLoading;\n\n  deleteUser(id: string): void {\n    this.userService.delete(id);\n  }\n}\n\n// ── DUMB component — zero service knowledge ─────────────\n@Component({\n  selector: 'app-user-list',\n  standalone: true,\n  template: `\n    @for (user of users(); track user.id) {\n      <div>{{ user.name }} <button (click)=\"delete.emit(user.id)\">Delete</button></div>\n    }\n  `,\n})\nexport class UserListComponent {\n  users  = input.required<User[]>();\n  delete = output<string>();             // just emits, does NOT call service\n}",
+      "explanation": "UserListComponent is 100% reusable — it can be dropped into any page because it has zero external dependencies."
+    },
+    {
+      "type": "tip",
+      "content": "Apply ChangeDetectionStrategy.OnPush to all dumb components. Because they only update when inputs change, Angular can skip checking them during every change-detection cycle, significantly improving performance in large component trees."
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "What are the three parts that make up an Angular component?",
+      "a": "A TypeScript class (holds data and behaviour), a template (the HTML view), and optional styles (scoped CSS). The @Component decorator links all three together and configures how Angular uses the component."
+    },
+    {
+      "q": "What does standalone: true mean on a component?",
+      "a": "It means the component does not belong to any NgModule. It manages its own dependencies via the imports array in @Component. This is the default and recommended approach from Angular 17 onwards, simplifying the mental model and improving tree-shaking."
+    },
+    {
+      "q": "What is the difference between input() and @Input()? Which is preferred?",
+      "a": "Both pass data from a parent to a child. @Input() is the old decorator-based API. input() is the new signal-based API (Angular 17+). With input(), the value is a Signal, so you read it with parentheses: name(). It also works seamlessly with computed() and effect(). input.required<T>() provides compile-time enforcement that the input must be provided. The signal-based input() is now preferred."
+    },
+    {
+      "q": "When does ngOnInit run, and why use it instead of the constructor?",
+      "a": "ngOnInit runs once, after Angular has set all the component's inputs for the first time. The constructor runs much earlier, before inputs are available. Use the constructor only for inject() calls and signal setup. Use ngOnInit for HTTP requests, reading inputs, and any initialisation that depends on the component's input values."
+    },
+    {
+      "q": "What is ngOnDestroy used for and why is it important?",
+      "a": "ngOnDestroy runs just before Angular removes the component from the DOM. It is critical for cleanup: cancelling setInterval / setTimeout, unsubscribing from Observables, and releasing any external resources. Failing to clean up leads to memory leaks — the callbacks keep running even after the component is gone."
+    },
+    {
+      "q": "What is ViewChild and when should you use it?",
+      "a": "ViewChild gives a component a direct TypeScript reference to a child DOM element or child component instance. You use it when template-driven communication (inputs/outputs) isn't sufficient — for example, to manually focus an input, read the dimensions of a canvas, or call a specific method on a child component. It should be used sparingly to avoid tight coupling; it is only available after ngAfterViewInit."
+    },
+    {
+      "q": "What is the difference between a Smart component and a Dumb component?",
+      "a": "A Smart (container) component knows about services, manages state, and orchestrates data flow. A Dumb (presentational) component has no service dependencies — it only receives data via inputs and emits events via outputs. Separating concerns this way makes dumb components highly reusable and easy to test. Smart components handle the 'how'; dumb components handle the 'what to show'."
+    },
+    {
+      "q": "What is ViewEncapsulation and what are the three modes?",
+      "a": "ViewEncapsulation controls how Angular scopes a component's CSS. The three modes are: Emulated (default) — Angular adds unique attribute selectors to CSS rules so they only match elements in this component; ShadowDom — uses the browser's native Shadow DOM for true CSS isolation; None — styles are global and bleed out to the rest of the app. Emulated is recommended for most cases."
+    },
+    {
+      "q": "Can a component have multiple selectors?",
+      "a": "No — a component has a single selector string. However, the selector supports CSS syntax: 'app-button' (element), '[appButton]' (attribute), and '.app-button' (class) are all valid. Attribute selectors are commonly used for directives, while element selectors are standard for components."
+    },
+    {
+      "q": "What happens if you use input.required() but the parent doesn't provide the input?",
+      "a": "Angular's compiler throws a compile-time error — it will not build the application. This is one of the key advantages of input.required<T>() over the old @Input() — missing required inputs are caught during development, not at runtime."
+    }
+  ]
+}

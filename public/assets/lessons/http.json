@@ -1,0 +1,194 @@
+{
+  "id": "http",
+  "title": "HTTP Client",
+  "subtitle": "Connect your Angular app to real APIs",
+  "description": "Master Angular's HttpClient — make GET, POST, PUT and DELETE requests, handle errors gracefully, add auth headers with interceptors, and build a clean reactive data layer using Signals.",
+  "icon": "🌐",
+  "xp": 160,
+  "difficulty": "Intermediate",
+  "estimatedTime": "40 min",
+  "prevLesson": { "id": "forms", "title": "Forms", "route": "/learn/forms" },
+  "nextLesson": { "id": "best-practices", "title": "Best Practices", "route": "/learn/best-practices" },
+  "keyPoints": [
+    "provideHttpClient() registers HttpClient in app.config.ts — import it once, inject everywhere",
+    "HttpClient methods (get, post, put, delete) return Observables — subscribe or use async pipe",
+    "Always handle errors with catchError() — never let HTTP failures silently break the UI",
+    "HTTP interceptors add headers, log requests, and handle 401 errors globally — no repetition",
+    "Keep all HTTP calls inside services, never in components — components only read signals",
+    "withInterceptors([]) is the modern functional interceptor API for standalone apps",
+    "The loading/data/error signal pattern gives reactive, type-safe async state management"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "What Is HttpClient?",
+      "content": "HttpClient is Angular's built-in service for making HTTP requests to REST APIs and static JSON files. It wraps the browser's XMLHttpRequest (or fetch, in newer versions) and returns RxJS Observables, giving you powerful operators for transforming, combining, and error-handling responses.\n\nKey advantages over raw fetch:\n• Type-safe responses — http.get<User[]>('/api/users') returns Observable<User[]>\n• Automatic JSON parsing — no response.json() needed\n• Interceptors — add auth headers, log requests, handle errors globally\n• Testing support — HttpClientTestingModule provides a mock backend\n• Progress events — track upload/download progress\n• Retry and timeout — compose with RxJS operators"
+    },
+    {
+      "type": "code",
+      "title": "Setup — provideHttpClient() in app.config.ts",
+      "filename": "app.config.ts",
+      "language": "typescript",
+      "code": "import { ApplicationConfig }    from '@angular/core';\nimport { provideRouter }        from '@angular/router';\nimport {\n  provideHttpClient,\n  withInterceptors,            // for functional interceptors\n  withFetch,                   // use fetch API instead of XHR (optional)\n} from '@angular/common/http';\nimport { routes }              from './app.routes';\nimport { authInterceptor }     from './core/interceptors/auth.interceptor';\nimport { loggingInterceptor }  from './core/interceptors/logging.interceptor';\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideRouter(routes),\n\n    // Register HttpClient once here — inject anywhere in the app\n    provideHttpClient(\n      withInterceptors([authInterceptor, loggingInterceptor]),\n      withFetch(),   // optional: use fetch instead of XMLHttpRequest\n    ),\n  ],\n};",
+      "explanation": "provideHttpClient() is called once in app.config.ts. Every service that injects HttpClient gets the same configured instance, including all registered interceptors."
+    },
+    {
+      "type": "text",
+      "title": "Making GET Requests",
+      "content": "HttpClient.get<T>() sends a GET request and returns an Observable<T>. You must subscribe to trigger the request — Observables are lazy by default.\n\nThe generic type parameter <T> tells TypeScript the shape of the response. Angular automatically parses the JSON body into the specified type.\n\nCommon ways to consume the Observable:\n• .subscribe() in a service — store the result in a signal\n• async pipe in a template — Angular manages the subscription lifecycle\n• firstValueFrom() — convert to a Promise for async/await patterns\n\nBest practice: make all HTTP calls inside services, not in components."
+    },
+    {
+      "type": "code",
+      "title": "GET Requests — Typed Responses",
+      "filename": "posts.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, inject, signal, computed } from '@angular/core';\nimport { HttpClient, HttpParams } from '@angular/common/http';\nimport { catchError, EMPTY, tap } from 'rxjs';\n\nexport interface Post {\n  id:     number;\n  title:  string;\n  body:   string;\n  userId: number;\n}\n\n@Injectable({ providedIn: 'root' })\nexport class PostsService {\n  private http = inject(HttpClient);\n  private BASE  = 'https://jsonplaceholder.typicode.com';\n\n  // ── Reactive state signals ─────────────────────────────────\n  private _posts   = signal<Post[]>([]);\n  private _loading = signal(false);\n  private _error   = signal<string | null>(null);\n\n  readonly posts   = this._posts.asReadonly();\n  readonly loading = this._loading.asReadonly();\n  readonly error   = this._error.asReadonly();\n  readonly count   = computed(() => this._posts().length);\n\n  // ── GET all posts ──────────────────────────────────────────\n  loadPosts(): void {\n    this._loading.set(true);\n    this._error.set(null);\n\n    this.http\n      .get<Post[]>(`${this.BASE}/posts`)\n      .pipe(\n        catchError(err => {\n          this._error.set(err.message);\n          this._loading.set(false);\n          return EMPTY;          // stop the stream, don't propagate\n        })\n      )\n      .subscribe(posts => {\n        this._posts.set(posts);\n        this._loading.set(false);\n      });\n  }\n\n  // ── GET single post ────────────────────────────────────────\n  getPost(id: number) {\n    return this.http.get<Post>(`${this.BASE}/posts/${id}`);\n    // Returns Observable<Post> — caller subscribes\n  }\n\n  // ── GET with query parameters: /posts?userId=1&_limit=10 ──\n  getPostsByUser(userId: number, limit = 10) {\n    const params = new HttpParams()\n      .set('userId', userId)\n      .set('_limit', limit);\n\n    return this.http.get<Post[]>(`${this.BASE}/posts`, { params });\n  }\n}",
+      "explanation": "EMPTY is an Observable that completes immediately without emitting. Returning it from catchError stops the error from propagating while still completing the stream cleanly — the subscribe callback simply never fires."
+    },
+    {
+      "type": "code",
+      "title": "Using the Service in a Component",
+      "filename": "posts-page.component.ts",
+      "language": "typescript",
+      "code": "import { Component, inject, OnInit } from '@angular/core';\nimport { PostsService } from './posts.service';\n\n@Component({\n  selector: 'app-posts-page',\n  standalone: true,\n  template: `\n    <h1>Posts ({{ postsService.count() }})</h1>\n\n    @if (postsService.loading()) {\n      <!-- Loading skeleton -->\n      <div class=\"skeleton\" *ngFor=\"let i of [1,2,3]\">Loading...</div>\n\n    } @else if (postsService.error()) {\n      <div class=\"error-banner\">\n        ⚠️ {{ postsService.error() }}\n        <button (click)=\"postsService.loadPosts()\">Retry</button>\n      </div>\n\n    } @else {\n      @for (post of postsService.posts(); track post.id) {\n        <article>\n          <h2>{{ post.title }}</h2>\n          <p>{{ post.body }}</p>\n        </article>\n      } @empty {\n        <p>No posts yet. <button (click)=\"postsService.loadPosts()\">Load posts</button></p>\n      }\n    }\n  `,\n})\nexport class PostsPageComponent implements OnInit {\n  postsService = inject(PostsService);\n\n  ngOnInit(): void {\n    this.postsService.loadPosts();\n  }\n}",
+      "explanation": "The component is thin — it reads signals and calls service methods. All HTTP logic, error handling, and state management live in the service. This makes the component easy to test and the service reusable."
+    },
+    {
+      "type": "diagram",
+      "title": "HTTP Request Lifecycle with Signals",
+      "svg": "<svg viewBox='0 0 640 280' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='280' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>HTTP REQUEST LIFECYCLE — SIGNAL PATTERN</text><rect x='20' y='44' width='130' height='210' rx='10' fill='#1e3a5f' opacity='0.4'/><rect x='20' y='44' width='130' height='210' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='85' y='68' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='600'>Component</text><text x='85' y='100' text-anchor='middle' fill='#94a3b8' font-size='10'>ngOnInit()</text><text x='85' y='116' text-anchor='middle' fill='#94a3b8' font-size='9'>calls loadPosts()</text><text x='85' y='158' text-anchor='middle' fill='#94a3b8' font-size='10'>template reads</text><text x='85' y='174' text-anchor='middle' fill='#60a5fa' font-size='9'>loading()</text><text x='85' y='190' text-anchor='middle' fill='#60a5fa' font-size='9'>posts()</text><text x='85' y='206' text-anchor='middle' fill='#60a5fa' font-size='9'>error()</text><rect x='170' y='44' width='160' height='210' rx='10' fill='#DD0031' opacity='0.1'/><rect x='170' y='44' width='160' height='210' rx='10' fill='none' stroke='#DD0031' stroke-width='1.5'/><text x='250' y='68' text-anchor='middle' fill='#DD0031' font-size='12' font-weight='600'>Service</text><rect x='185' y='80' width='130' height='24' rx='5' fill='#1e293b'/><text x='250' y='96' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>loading.set(true)</text><rect x='185' y='110' width='130' height='24' rx='5' fill='#1e293b'/><text x='250' y='126' text-anchor='middle' fill='#94a3b8' font-size='9' font-family='monospace'>http.get&lt;Post[]&gt;()</text><rect x='185' y='160' width='130' height='24' rx='5' fill='#065f46' opacity='0.5'/><text x='250' y='176' text-anchor='middle' fill='#4ade80' font-size='9' font-family='monospace'>posts.set(data)</text><rect x='185' y='190' width='130' height='24' rx='5' fill='#065f46' opacity='0.5'/><text x='250' y='206' text-anchor='middle' fill='#4ade80' font-size='9' font-family='monospace'>loading.set(false)</text><rect x='185' y='220' width='130' height='24' rx='5' fill='#450a0a' opacity='0.7'/><text x='250' y='236' text-anchor='middle' fill='#f87171' font-size='9' font-family='monospace'>error.set(msg)</text><rect x='350' y='44' width='110' height='80' rx='10' fill='#4c1d95' opacity='0.2'/><rect x='350' y='44' width='110' height='80' rx='10' fill='none' stroke='#8b5cf6' stroke-width='1.5'/><text x='405' y='68' text-anchor='middle' fill='#a78bfa' font-size='12' font-weight='600'>Interceptors</text><text x='405' y='88' text-anchor='middle' fill='#94a3b8' font-size='9'>Add Auth header</text><text x='405' y='104' text-anchor='middle' fill='#94a3b8' font-size='9'>Log request</text><rect x='490' y='44' width='130' height='80' rx='10' fill='#065f46' opacity='0.2'/><rect x='490' y='44' width='130' height='80' rx='10' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='555' y='68' text-anchor='middle' fill='#34d399' font-size='12' font-weight='600'>REST API</text><text x='555' y='88' text-anchor='middle' fill='#94a3b8' font-size='9'>Returns JSON</text><text x='555' y='104' text-anchor='middle' fill='#94a3b8' font-size='9'>200 / 4xx / 5xx</text><path d='M150 122 L170 122' stroke='#334155' stroke-width='1.5' marker-end='url(#bx)'/><path d='M330 122 L350 84' stroke='#8b5cf6' stroke-width='1.5' marker-end='url(#bx)'/><path d='M460 84 L490 84' stroke='#334155' stroke-width='1.5' marker-end='url(#bx)'/><path d='M490 104 L460 104' stroke='#10b981' stroke-width='1.5' marker-end='url(#bx)'/><path d='M350 104 L330 170' stroke='#4ade80' stroke-width='1.5' marker-end='url(#bx)'/><path d='M150 180 L130 180' stroke='#4ade80' stroke-width='1.5' marker-end='url(#bx)'/><defs><marker id='bx' markerWidth='6' markerHeight='5' refX='4' refY='2.5' orient='auto'><path d='M0,0 L6,2.5 L0,5 Z' fill='#475569'/></marker></defs></svg>",
+      "caption": "The request flows: Component → Service → Interceptors → API → back through interceptors → Service updates signals → Component template auto-updates."
+    },
+    {
+      "type": "text",
+      "title": "POST, PUT, PATCH and DELETE",
+      "content": "HttpClient provides methods for all HTTP verbs. They all return Observables and accept a body as the second argument (for POST, PUT, PATCH).\n\n• http.post<T>(url, body)   — create a resource\n• http.put<T>(url, body)    — replace a resource entirely\n• http.patch<T>(url, body)  — update specific fields\n• http.delete<T>(url)       — remove a resource\n\nThe generic type T represents the response body. For endpoints that return nothing (204 No Content), use http.delete<void>() or check the response type documentation."
+    },
+    {
+      "type": "code",
+      "title": "POST, PUT, PATCH, DELETE",
+      "filename": "posts.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, inject, signal } from '@angular/core';\nimport { HttpClient }  from '@angular/common/http';\nimport { Observable }  from 'rxjs';\nimport { tap }         from 'rxjs/operators';\n\nexport interface CreatePostDto { title: string; body: string; userId: number; }\nexport interface UpdatePostDto { title?: string; body?: string; }\n\n@Injectable({ providedIn: 'root' })\nexport class PostsMutationService {\n  private http = inject(HttpClient);\n  private BASE  = 'https://jsonplaceholder.typicode.com';\n\n  saving  = signal(false);\n  deleting = signal(false);\n\n  // ── POST — create a new resource ──────────────────────────\n  createPost(dto: CreatePostDto): Observable<Post> {\n    return this.http\n      .post<Post>(`${this.BASE}/posts`, dto);\n      // Angular serialises dto to JSON automatically\n      // Content-Type: application/json is set automatically\n  }\n\n  // ── PUT — replace the full resource ───────────────────────\n  replacePost(id: number, post: CreatePostDto): Observable<Post> {\n    return this.http.put<Post>(`${this.BASE}/posts/${id}`, post);\n  }\n\n  // ── PATCH — update specific fields only ───────────────────\n  updatePost(id: number, changes: UpdatePostDto): Observable<Post> {\n    return this.http.patch<Post>(`${this.BASE}/posts/${id}`, changes);\n  }\n\n  // ── DELETE — remove a resource ────────────────────────────\n  deletePost(id: number): Observable<void> {\n    this.deleting.set(true);\n    return this.http\n      .delete<void>(`${this.BASE}/posts/${id}`)\n      .pipe(tap(() => this.deleting.set(false)));\n  }\n}\n\n// ── Usage in a component ──────────────────────────────────\n// this.service.createPost({ title: 'New', body: 'Content', userId: 1 })\n//   .subscribe({\n//     next: (post) => { console.log('Created:', post); },\n//     error: (err) => { this.error.set(err.message); },\n//   });",
+      "explanation": "HttpClient automatically sets Content-Type: application/json and serialises the body object. You never need JSON.stringify() — Angular handles it. The tap() operator is great for side effects like updating a loading signal."
+    },
+    {
+      "type": "text",
+      "title": "HTTP Headers and Request Options",
+      "content": "Some API endpoints require custom headers — an auth token, an API key, a content type, or a correlation ID. You pass them via the options object as the last argument to any HttpClient method.\n\nHttpHeaders is immutable — every 'set' method returns a new instance rather than mutating. This is important when building headers incrementally.\n\nOther useful request options:\n• params     — query string parameters (HttpParams)\n• observe    — 'body' (default), 'response' (full response with headers), 'events' (upload progress)\n• responseType — 'json' (default), 'text', 'blob', 'arraybuffer'"
+    },
+    {
+      "type": "code",
+      "title": "HTTP Headers and Request Options",
+      "filename": "api.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, inject } from '@angular/core';\nimport { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';\n\n@Injectable({ providedIn: 'root' })\nexport class ApiService {\n  private http = inject(HttpClient);\n\n  // ── Custom headers ────────────────────────────────────────\n  getWithAuth(token: string) {\n    const headers = new HttpHeaders({\n      'Authorization': `Bearer ${token}`,\n      'X-Api-Version': '2',\n    });\n\n    return this.http.get<Data[]>('/api/data', { headers });\n  }\n\n  // ── HttpHeaders is immutable — chain .set() calls ─────────\n  postWithHeaders(body: object) {\n    const headers = new HttpHeaders()\n      .set('Content-Type', 'application/json')\n      .set('Accept-Language', 'en-US');\n\n    return this.http.post<Response>('/api/items', body, { headers });\n  }\n\n  // ── Query parameters: /products?category=books&page=2 ─────\n  searchProducts(category: string, page: number) {\n    const params = new HttpParams()\n      .set('category', category)\n      .set('page', page)\n      .set('limit', 20);\n\n    return this.http.get<Product[]>('/api/products', { params });\n  }\n\n  // ── observe: 'response' — access status code and headers ──\n  getFullResponse() {\n    return this.http.get<User>('/api/me', { observe: 'response' });\n    // Returns Observable<HttpResponse<User>>\n    // response.status, response.headers, response.body available\n  }\n\n  // ── responseType: 'blob' — download a file ────────────────\n  downloadFile(fileId: string) {\n    return this.http.get(`/api/files/${fileId}`, {\n      responseType: 'blob',              // don't parse as JSON\n      observe: 'response',               // get headers too (filename)\n    });\n  }\n}",
+      "explanation": "HttpParams and HttpHeaders are both immutable — each .set() call returns a new instance. This immutability prevents accidental mutation when headers are built across multiple method calls."
+    },
+    {
+      "type": "text",
+      "title": "Error Handling with catchError",
+      "content": "HTTP requests fail — networks are unreliable, APIs go down, users lose connectivity. You must always handle errors explicitly.\n\nRxJS catchError operator intercepts errors in the Observable pipeline. It receives the error and must return a new Observable.\n\nCommon error handling strategies:\n• Return EMPTY         — silently stop, no further emissions\n• Return of(default)  — emit a fallback value and complete\n• throw new Error()   — rethrow (component catches it)\n• Return timer + retry — automatic retry with backoff\n\nAngular wraps HTTP errors in HttpErrorResponse, which contains:\n• status    — HTTP status code (404, 500, 0 for network errors)\n• message   — error message\n• error     — the parsed error body from the API\n• statusText — text like 'Not Found', 'Internal Server Error'"
+    },
+    {
+      "type": "code",
+      "title": "Comprehensive Error Handling",
+      "filename": "error-handling.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, inject, signal } from '@angular/core';\nimport {\n  HttpClient, HttpErrorResponse\n} from '@angular/common/http';\nimport {\n  catchError, retry, throwError, EMPTY, of, timer\n} from 'rxjs';\nimport { switchMap } from 'rxjs/operators';\n\n@Injectable({ providedIn: 'root' })\nexport class ResilientApiService {\n  private http = inject(HttpClient);\n\n  // ── Pattern 1: catch, set error signal, return EMPTY ──────\n  loadData = () => {\n    const error = signal<string | null>(null);\n\n    const data$ = this.http.get<Item[]>('/api/items').pipe(\n      catchError((err: HttpErrorResponse) => {\n        error.set(this.friendlyMessage(err));\n        return EMPTY;\n      })\n    );\n    return { data$, error };\n  };\n\n  // ── Pattern 2: auto-retry on failure (network errors) ─────\n  loadWithRetry() {\n    return this.http.get<Data>('/api/data').pipe(\n      retry({ count: 3, delay: 1000 }),  // retry 3× with 1s delay\n      catchError(err => throwError(() => err))  // propagate after retries\n    );\n  }\n\n  // ── Pattern 3: exponential backoff ────────────────────────\n  loadWithBackoff() {\n    return this.http.get<Data>('/api/data').pipe(\n      retry({\n        count: 4,\n        delay: (error, attempt) => timer(Math.pow(2, attempt) * 500)\n        //  attempt 1: 500ms, 2: 1000ms, 3: 2000ms, 4: 4000ms\n      })\n    );\n  }\n\n  // ── Map HttpErrorResponse to a user-friendly message ──────\n  private friendlyMessage(err: HttpErrorResponse): string {\n    if (err.status === 0) {\n      return 'No internet connection. Please check your network.';\n    }\n    if (err.status === 401) return 'You are not logged in.';\n    if (err.status === 403) return 'You do not have permission.';\n    if (err.status === 404) return 'The requested resource was not found.';\n    if (err.status >= 500) return 'Server error. Please try again later.';\n    return err.message ?? 'An unexpected error occurred.';\n  }\n}",
+      "explanation": "err.status === 0 means a network error — no response reached the server (offline, CORS, DNS failure). Always check for status 0 separately from HTTP error codes."
+    },
+    {
+      "type": "tip",
+      "content": "Use the retry() operator with a delay for GET requests on unstable networks — it is safe to retry idempotent requests. Never auto-retry POST/PUT/DELETE — the request may have reached the server and succeeded before the response was lost, causing duplicate actions."
+    },
+    {
+      "type": "text",
+      "title": "HTTP Interceptors — Global Request/Response Handling",
+      "content": "Interceptors sit in the middleware pipeline between your service and the HTTP transport. Every request passes through all registered interceptors before being sent, and every response passes back through them on the way back.\n\nCommon use cases:\n• Auth interceptor  — append Bearer token to every request automatically\n• Logging interceptor — log request URL, method, status, and duration\n• Error interceptor — catch 401 errors globally and redirect to login\n• Loading interceptor — show a global spinner for all in-flight requests\n• Cache interceptor  — return a cached response for repeated GET requests\n\nModern Angular (17+) uses functional interceptors — just a function, no class needed."
+    },
+    {
+      "type": "code",
+      "title": "Auth Interceptor — Add Bearer Token",
+      "filename": "auth.interceptor.ts",
+      "language": "typescript",
+      "code": "import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';\nimport { inject } from '@angular/core';\nimport { AuthService } from '../services/auth.service';\n\n// Functional interceptor — no class, just a function\nexport const authInterceptor: HttpInterceptorFn = (\n  req: HttpRequest<unknown>,\n  next: HttpHandlerFn\n) => {\n  const auth  = inject(AuthService);\n  const token = auth.getToken();\n\n  // Don't add auth header to public endpoints\n  if (!token || req.url.includes('/public/')) {\n    return next(req);   // pass through unchanged\n  }\n\n  // HttpRequest is immutable — clone to modify\n  const authReq = req.clone({\n    setHeaders: {\n      Authorization: `Bearer ${token}`,\n      'X-Request-Id': crypto.randomUUID(),\n    }\n  });\n\n  return next(authReq);   // pass the modified request\n};",
+      "explanation": "HttpRequest is immutable — req.clone() creates a new request with the specified changes. Never mutate req directly. The req.url.includes() check prevents sending your auth token to third-party APIs."
+    },
+    {
+      "type": "code",
+      "title": "Logging Interceptor — Measure Request Time",
+      "filename": "logging.interceptor.ts",
+      "language": "typescript",
+      "code": "import { HttpInterceptorFn }  from '@angular/common/http';\nimport { tap, finalize }      from 'rxjs/operators';\n\nexport const loggingInterceptor: HttpInterceptorFn = (req, next) => {\n  const started = Date.now();\n\n  console.log(`→ ${req.method} ${req.url}`);\n\n  return next(req).pipe(\n    tap({\n      // Response arrived\n      next:  event  => console.log(`← 200 ${req.url}`),\n      error: err    => console.error(`✗ ${err.status} ${req.url}`, err.message),\n    }),\n    finalize(() => {\n      const elapsed = Date.now() - started;\n      console.log(`⏱ ${req.method} ${req.url} — ${elapsed}ms`);\n    })\n  );\n};\n\n// ── Error + Redirect Interceptor ──────────────────────────\nimport { inject }         from '@angular/core';\nimport { Router }         from '@angular/router';\nimport { catchError }     from 'rxjs';\nimport { throwError }     from 'rxjs';\n\nexport const errorInterceptor: HttpInterceptorFn = (req, next) => {\n  const router = inject(Router);\n\n  return next(req).pipe(\n    catchError(err => {\n      if (err.status === 401) {\n        // Token expired or invalid — redirect to login globally\n        router.navigate(['/login'], { queryParams: { returnUrl: router.url } });\n      }\n      if (err.status === 403) {\n        router.navigate(['/forbidden']);\n      }\n      return throwError(() => err);  // still propagate to the service\n    })\n  );\n};",
+      "explanation": "finalize() runs regardless of success or error — perfect for timing. The error interceptor handles 401/403 globally so no individual service has to. throwError() re-throws so the service's catchError still fires."
+    },
+    {
+      "type": "text",
+      "title": "Transforming Responses with RxJS Operators",
+      "content": "HttpClient returns raw Observables — you can chain RxJS operators to transform, filter, or combine the data before it reaches your signal.\n\nMost useful operators with HTTP:\n• map()         — transform the response shape\n• tap()         — side-effects (logging, analytics) without changing the stream\n• switchMap()   — chain requests (search-as-you-type: cancel previous)\n• forkJoin()    — parallel requests — wait for all to complete\n• combineLatest()— react to multiple sources (user + permissions)\n• shareReplay() — cache and share one HTTP response to multiple subscribers\n• debounceTime()— wait for user to stop typing before firing a search request"
+    },
+    {
+      "type": "code",
+      "title": "Chaining Requests and Parallel Requests",
+      "filename": "advanced-http.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, inject } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\nimport { forkJoin, switchMap, map, shareReplay } from 'rxjs';\n\n@Injectable({ providedIn: 'root' })\nexport class AdvancedHttpService {\n  private http = inject(HttpClient);\n  private BASE  = 'https://jsonplaceholder.typicode.com';\n\n  // ── Parallel requests — wait for all ──────────────────────\n  // forkJoin fires all requests at once; result array matches input order\n  loadDashboard() {\n    return forkJoin({\n      users:  this.http.get<User[]>(`${this.BASE}/users`),\n      posts:  this.http.get<Post[]>(`${this.BASE}/posts`),\n      albums: this.http.get<Album[]>(`${this.BASE}/albums`),\n    });\n    // Returns: Observable<{ users: User[]; posts: Post[]; albums: Album[] }>\n    // All 3 requests fire simultaneously — completes when ALL succeed\n  }\n\n  // ── Chain requests — result of first feeds the second ─────\n  // switchMap cancels the previous inner request on each new outer value\n  loadUserWithPosts(userId$: Observable<number>) {\n    return userId$.pipe(\n      switchMap(id =>\n        this.http.get<User>(`${this.BASE}/users/${id}`).pipe(\n          switchMap(user =>\n            this.http.get<Post[]>(`${this.BASE}/posts?userId=${user.id}`).pipe(\n              map(posts => ({ user, posts }))  // combine both results\n            )\n          )\n        )\n      )\n    );\n  }\n\n  // ── Cache a request — share one response to all subscribers\n  private config$ = this.http.get<AppConfig>('/api/config').pipe(\n    shareReplay(1)   // cache the last emission, replay to new subscribers\n  );\n\n  getConfig() {\n    return this.config$;  // second+ subscriber gets the cached response\n  }\n\n  // ── Transform the response shape ──────────────────────────\n  getUserNames() {\n    return this.http.get<User[]>(`${this.BASE}/users`).pipe(\n      map(users => users.map(u => ({ id: u.id, label: u.name })))\n    );\n  }\n}",
+      "explanation": "forkJoin is ideal for loading multiple independent data sources for a dashboard — three API calls fire in parallel instead of sequentially, cutting load time to max(t1, t2, t3) instead of t1+t2+t3."
+    },
+    {
+      "type": "note",
+      "content": "Always unsubscribe from long-lived Observables when a component is destroyed to prevent memory leaks. For HTTP requests this is less critical (they complete after one response), but for continuous streams use takeUntilDestroyed() from @angular/core/rxjs-interop — it automatically unsubscribes when the component is destroyed."
+    },
+    {
+      "type": "code",
+      "title": "Complete CRUD Service Example",
+      "filename": "todos.service.ts",
+      "language": "typescript",
+      "code": "import { Injectable, inject, signal, computed } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\nimport { catchError, EMPTY, tap } from 'rxjs';\n\ninterface Todo { id: number; title: string; completed: boolean; }\ninterface CreateTodoDto { title: string; userId: number; }\n\n@Injectable({ providedIn: 'root' })\nexport class TodosService {\n  private http  = inject(HttpClient);\n  private BASE   = 'https://jsonplaceholder.typicode.com/todos';\n\n  private _todos   = signal<Todo[]>([]);\n  private _loading = signal(false);\n  private _error   = signal<string | null>(null);\n  private _saving  = signal(false);\n\n  readonly todos      = this._todos.asReadonly();\n  readonly loading    = this._loading.asReadonly();\n  readonly error      = this._error.asReadonly();\n  readonly saving     = this._saving.asReadonly();\n  readonly doneCount  = computed(() => this._todos().filter(t => t.completed).length);\n  readonly totalCount = computed(() => this._todos().length);\n\n  // ── READ ──────────────────────────────────────────────────\n  load(): void {\n    this._loading.set(true);\n    this.http.get<Todo[]>(`${this.BASE}?_limit=10`).pipe(\n      catchError(err => { this._error.set(err.message); this._loading.set(false); return EMPTY; })\n    ).subscribe(todos => { this._todos.set(todos); this._loading.set(false); });\n  }\n\n  // ── CREATE ────────────────────────────────────────────────\n  create(dto: CreateTodoDto): void {\n    this._saving.set(true);\n    this.http.post<Todo>(this.BASE, { ...dto, completed: false }).pipe(\n      catchError(err => { this._error.set(err.message); this._saving.set(false); return EMPTY; })\n    ).subscribe(todo => {\n      this._todos.update(list => [todo, ...list]);  // optimistic prepend\n      this._saving.set(false);\n    });\n  }\n\n  // ── UPDATE ────────────────────────────────────────────────\n  toggle(id: number): void {\n    const todo = this._todos().find(t => t.id === id);\n    if (!todo) return;\n    // Optimistic update — update UI immediately, then sync with server\n    this._todos.update(list => list.map(t => t.id === id ? { ...t, completed: !t.completed } : t));\n    this.http.patch<Todo>(`${this.BASE}/${id}`, { completed: !todo.completed })\n      .pipe(catchError(() => {\n        // Revert on failure\n        this._todos.update(list => list.map(t => t.id === id ? { ...t, completed: todo.completed } : t));\n        return EMPTY;\n      })).subscribe();\n  }\n\n  // ── DELETE ────────────────────────────────────────────────\n  delete(id: number): void {\n    this._todos.update(list => list.filter(t => t.id !== id));  // optimistic\n    this.http.delete(`${this.BASE}/${id}`)\n      .pipe(catchError(() => {\n        this.load();   // revert by re-fetching\n        return EMPTY;\n      })).subscribe();\n  }\n}",
+      "explanation": "Optimistic updates change the local signal immediately for instant UI feedback, then sync with the server. On server failure, the change is rolled back. This makes the app feel fast on slow networks."
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "How do you set up HttpClient in a standalone Angular app?",
+      "a": "Call provideHttpClient() in the providers array of ApplicationConfig in app.config.ts. Optionally pass feature functions: withInterceptors([...]) for functional interceptors, withFetch() to use the Fetch API instead of XMLHttpRequest. This registers HttpClient as a singleton — any service or component can then inject it with inject(HttpClient). Never import HttpClientModule in standalone apps — that is the legacy NgModule approach."
+    },
+    {
+      "q": "Why do you need to subscribe to HttpClient methods? What happens if you don't?",
+      "a": "RxJS Observables are lazy — they do not execute until a subscriber is attached. HttpClient.get() returns an Observable that represents the HTTP request, but the request is not actually sent until you call .subscribe() or convert it with firstValueFrom(). If nothing subscribes, no HTTP request is ever made. The async pipe in templates is a form of subscription that also automatically unsubscribes when the component is destroyed."
+    },
+    {
+      "q": "What is HttpErrorResponse and how do you handle different error types?",
+      "a": "HttpErrorResponse is the error object Angular provides in the catchError operator. Key fields: status (HTTP code — 0 for network errors, 4xx for client errors, 5xx for server errors), message, error (the parsed API error body), and statusText. Status 0 means no response reached the server — network offline, CORS error, or DNS failure. In catchError, check err.status to provide user-friendly messages: 401 → 'Not logged in', 404 → 'Not found', 500+ → 'Server error', 0 → 'No internet connection'."
+    },
+    {
+      "q": "What is an HTTP interceptor and what are common use cases?",
+      "a": "An interceptor is middleware that processes every HTTP request before it is sent and every response before it reaches the service. Modern Angular uses functional interceptors: export const myInterceptor: HttpInterceptorFn = (req, next) => { ... return next(req); }. Register them with withInterceptors([myInterceptor]) in provideHttpClient(). Common uses: automatically adding Authorization headers (auth interceptor), logging request timing (logging interceptor), globally redirecting on 401 errors (error interceptor), showing a global loading spinner (loading interceptor), and caching GET responses."
+    },
+    {
+      "q": "Why is HttpRequest immutable and how do you modify a request in an interceptor?",
+      "a": "HttpRequest is immutable to prevent accidental shared-state bugs when multiple interceptors modify the same request. To modify a request, call req.clone({ ... }) with the changes — it returns a new HttpRequest with those changes applied and all other properties copied from the original. Common changes in clone: setHeaders, params, url, body, withCredentials. Pass the cloned request to next(clonedReq) instead of the original."
+    },
+    {
+      "q": "What is the difference between switchMap and forkJoin when chaining HTTP requests?",
+      "a": "forkJoin fires multiple requests in parallel and emits one combined result when ALL complete — ideal for loading independent data sources simultaneously (like a dashboard). switchMap chains sequential requests where the result of the first feeds into the second, and importantly cancels the previous inner request if the outer observable emits again — ideal for search-as-you-type (typing a new character cancels the previous search request). mergeMap is like switchMap but does not cancel, allowing parallel inner requests."
+    },
+    {
+      "q": "What is shareReplay and when would you use it with HTTP?",
+      "a": "shareReplay(1) caches the last emitted value and replays it to any new subscriber, also sharing a single subscription to the source. For HTTP, this means only one network request is made even if multiple components subscribe. It is useful for rarely-changing data like app configuration, feature flags, or user profile — instead of making the same HTTP call from multiple places, define the observable once at service level with shareReplay(1) and share it."
+    },
+    {
+      "q": "What is an optimistic update and how do you implement it with signals?",
+      "a": "An optimistic update applies the change to the local UI state immediately (before the server confirms it), giving instant feedback. If the server call fails, you revert the change. Implementation: 1) Update the signal immediately. 2) Send the HTTP request. 3) In catchError, undo the signal change (or re-fetch). This makes the app feel fast even on slow networks — the user sees the result instantly instead of waiting for the round-trip."
+    },
+    {
+      "q": "How do you send custom headers with an HttpClient request?",
+      "a": "Create an HttpHeaders instance and pass it in the options object: const headers = new HttpHeaders({ 'Authorization': 'Bearer ' + token }); return this.http.get('/api/data', { headers }). HttpHeaders is immutable — use new HttpHeaders({ key: value }) for initial values, or chain .set('key', 'value') calls (each returns a new instance). In practice, add auth headers globally via an interceptor rather than in every service method."
+    },
+    {
+      "q": "Why should HTTP calls be in services rather than components?",
+      "a": "Keeping HTTP calls in services provides: reusability (multiple components can use the same service method), testability (mock the service in component tests without needing HttpClientTestingModule), separation of concerns (components describe the UI, services handle data), and single source of truth (one service instance serves all components that need the same data). If a component makes its own HTTP calls, that data is local and cannot be shared; if two components need the same data, you make two network requests. Services with reactive signals solve all of this."
+    }
+  ]
+}

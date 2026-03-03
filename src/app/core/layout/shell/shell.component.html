@@ -1,0 +1,33 @@
+<!-- Root: full viewport, no overflow clipping at this level -->
+<div class="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+
+  <!-- ── Fixed Sidebar (z-40, sits above header) ───────────────── -->
+  <app-sidebar [collapsed]="sidebarCollapsed()" />
+
+  <!--
+    ── Main Column ──────────────────────────────────────────────────
+    margin-left shifts the column past the fixed sidebar.
+    min-h-0 is required for flex children to scroll correctly.
+    This column itself does NOT overflow-hidden so sticky header works.
+  -->
+  <div
+    class="flex flex-col flex-1 min-h-0 transition-all duration-300"
+    [style.margin-left]="sidebarCollapsed() ? '4rem' : '16rem'"
+  >
+
+    <!-- Sticky header — stays at top while page content scrolls -->
+    <app-header (toggleSidebar)="toggleSidebar()" />
+
+    <!--
+      Scrollable page area.
+      overflow-y-auto goes here (on the main), NOT on a parent.
+      router-outlet renders the active page component here.
+    -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-6 animate-fade-in">
+        <router-outlet />
+      </div>
+    </main>
+
+  </div>
+</div>

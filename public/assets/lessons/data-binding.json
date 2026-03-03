@@ -1,0 +1,197 @@
+{
+  "id": "data-binding",
+  "title": "Data Binding",
+  "subtitle": "Connect your TypeScript class to the HTML template",
+  "description": "Master all four types of Angular data binding — interpolation, property binding, event binding, and two-way binding. Plus class/style binding and template reference variables.",
+  "icon": "🔗",
+  "xp": 110,
+  "difficulty": "Beginner",
+  "estimatedTime": "20 min",
+  "prevLesson": { "id": "components", "title": "Components", "route": "/learn/components" },
+  "nextLesson": { "id": "directives", "title": "Directives", "route": "/learn/directives" },
+  "keyPoints": [
+    "Interpolation {{ expr }} renders TypeScript expressions directly in the template",
+    "Property binding [prop]=\"value\" pushes data FROM the class INTO the DOM",
+    "Event binding (event)=\"handler()\" listens to DOM events and calls class methods",
+    "Two-way binding [(ngModel)] combines property + event binding in one shorthand",
+    "Class binding [class.name]=\"bool\" and style binding [style.prop]=\"value\" toggle CSS dynamically",
+    "Template reference variables #ref give you a direct handle to a DOM element or component",
+    "Angular uses one-way data flow by default — this makes apps predictable and easy to debug"
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "title": "What Is Data Binding?",
+      "content": "Data binding is the mechanism that keeps your TypeScript class (the data) and your HTML template (the view) in sync. Without data binding you would have to manually read from and write to the DOM using JavaScript — Angular automates all of that.\n\nThere are four distinct types of data binding in Angular, each serving a different direction of data flow:\n\n① Interpolation       — class → template (read-only text)\n② Property Binding    — class → DOM element property\n③ Event Binding       — DOM event → class method\n④ Two-way Binding     — class ↔ DOM (both directions at once)"
+    },
+    {
+      "type": "diagram",
+      "title": "The Four Types of Data Binding",
+      "svg": "<svg viewBox='0 0 640 300' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='640' height='300' rx='12' fill='#0f172a'/><text x='320' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>ANGULAR DATA BINDING — 4 TYPES</text><rect x='30' y='44' width='180' height='212' rx='10' fill='#1e293b' stroke='#334155' stroke-width='1'/><text x='120' y='68' text-anchor='middle' fill='#60a5fa' font-size='13' font-weight='700'>TypeScript Class</text><rect x='50' y='82' width='140' height='30' rx='6' fill='#0f172a'/><text x='120' y='101' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>title = \"Angular\"</text><rect x='50' y='120' width='140' height='30' rx='6' fill='#0f172a'/><text x='120' y='139' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>imgSrc = \"/logo.png\"</text><rect x='50' y='158' width='140' height='30' rx='6' fill='#0f172a'/><text x='120' y='177' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>onClick() {}</text><rect x='50' y='196' width='140' height='30' rx='6' fill='#0f172a'/><text x='120' y='215' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>name = \"\"</text><rect x='430' y='44' width='180' height='212' rx='10' fill='#1e293b' stroke='#334155' stroke-width='1'/><text x='520' y='68' text-anchor='middle' fill='#34d399' font-size='13' font-weight='700'>HTML Template</text><rect x='450' y='82' width='140' height='30' rx='6' fill='#0f172a'/><text x='520' y='101' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>{{ title }}</text><rect x='450' y='120' width='140' height='30' rx='6' fill='#0f172a'/><text x='520' y='139' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>[src]=\"imgSrc\"</text><rect x='450' y='158' width='140' height='30' rx='6' fill='#0f172a'/><text x='520' y='177' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>(click)=\"onClick()\"</text><rect x='450' y='196' width='140' height='30' rx='6' fill='#0f172a'/><text x='520' y='215' text-anchor='middle' fill='#94a3b8' font-size='11' font-family='monospace'>[(ngModel)]=\"name\"</text><path d='M210 97 L430 97' stroke='#DD0031' stroke-width='2' marker-end='url(#r)'/><text x='320' y='92' text-anchor='middle' fill='#DD0031' font-size='10' font-weight='700'>① Interpolation {{ }}</text><path d='M210 135 L430 135' stroke='#f97316' stroke-width='2' marker-end='url(#o)'/><text x='320' y='130' text-anchor='middle' fill='#f97316' font-size='10' font-weight='700'>② Property Binding [prop]</text><path d='M430 173 L210 173' stroke='#a855f7' stroke-width='2' marker-end='url(#p)'/><text x='320' y='168' text-anchor='middle' fill='#a855f7' font-size='10' font-weight='700'>③ Event Binding (event)</text><path d='M210 211 L430 211' stroke='#10b981' stroke-width='2' marker-end='url(#g)'/><path d='M430 221 L210 221' stroke='#10b981' stroke-width='2' marker-end='url(#g2)'/><text x='320' y='235' text-anchor='middle' fill='#10b981' font-size='10' font-weight='700'>④ Two-Way [(ngModel)]</text><defs><marker id='r' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#DD0031'/></marker><marker id='o' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#f97316'/></marker><marker id='p' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#a855f7'/></marker><marker id='g' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#10b981'/></marker><marker id='g2' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#10b981'/></marker></defs></svg>",
+      "caption": "Interpolation and Property Binding push data from class → template. Event Binding pulls events from template → class. Two-way binding does both simultaneously."
+    },
+
+    {
+      "type": "text",
+      "title": "① Interpolation — {{ expression }}",
+      "content": "Interpolation is the simplest form of data binding. You wrap any TypeScript expression in double curly braces {{ }} inside the template, and Angular evaluates it and renders the result as text.\n\nYou can use:\n• Class properties: {{ title }}\n• Method calls: {{ getFullName() }}\n• Simple expressions: {{ price * 1.1 }}\n• Ternary operators: {{ isLoggedIn ? 'Welcome!' : 'Please log in' }}\n\nAngular automatically HTML-escapes the output, protecting you from XSS attacks. If you need to render raw HTML, use [innerHTML] with DomSanitizer."
+    },
+    {
+      "type": "code",
+      "title": "Interpolation Examples",
+      "filename": "product-card.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal, computed } from '@angular/core';\n\n@Component({\n  selector: 'app-product-card',\n  standalone: true,\n  template: `\n    <!-- Basic property interpolation -->\n    <h1>{{ productName }}</h1>\n\n    <!-- Expression: arithmetic -->\n    <p>Price with tax: {{ price * 1.2 | number:'1.2-2' }}</p>\n\n    <!-- Expression: ternary -->\n    <p>Status: {{ stock > 0 ? 'In Stock' : 'Out of Stock' }}</p>\n\n    <!-- Method call -->\n    <p>Label: {{ getLabel() }}</p>\n\n    <!-- Signal — same syntax, just call with () -->\n    <p>Rating: {{ rating() }} / 5</p>\n\n    <!-- Nested object property -->\n    <p>Category: {{ product.category.name }}</p>\n  `,\n})\nexport class ProductCardComponent {\n  productName = 'Angular Mastery Book';\n  price       = 49.99;\n  stock       = 10;\n  rating      = signal(4.7);\n  product     = { category: { name: 'Programming' } };\n\n  getLabel(): string {\n    return this.stock > 5 ? 'Plenty available' : 'Low stock!';\n  }\n}",
+      "explanation": "Signals use the same {{ }} syntax — just add () to read the value. Angular tracks signal reads inside templates automatically."
+    },
+    {
+      "type": "tip",
+      "content": "Keep interpolation expressions simple. If you need complex logic, move it into a computed signal or a method in the class. Templates should describe the UI, not contain business logic."
+    },
+
+    {
+      "type": "text",
+      "title": "② Property Binding — [property]=\"expression\"",
+      "content": "Property binding sets a DOM element's property to a value from the class. It uses square brackets [ ] around the property name.\n\nThe key difference between property binding and HTML attributes:\n• HTML attributes (src=\"...\") are static strings set once at parse time\n• Property binding [src]=\"...\" is dynamic — Angular evaluates the expression and updates the DOM property whenever the value changes\n\nCommon uses:\n• [src]=\"imageUrl\"         — image source\n• [href]=\"linkUrl\"         — anchor href\n• [disabled]=\"isLoading\"   — button disabled state\n• [value]=\"inputValue\"     — input value\n• [hidden]=\"isHidden\"      — hide/show element\n• [class]=\"cssClass\"       — set full class string"
+    },
+    {
+      "type": "code",
+      "title": "Property Binding in Action",
+      "filename": "image-gallery.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'app-image-gallery',\n  standalone: true,\n  template: `\n    <!-- [src] and [alt] — DOM properties, not HTML attributes -->\n    <img [src]=\"currentImage()\" [alt]=\"imageAlt\" width=\"400\" />\n\n    <!-- [disabled] — accepts a boolean expression -->\n    <button [disabled]=\"isLoading()\" (click)=\"loadNext()\">\n      {{ isLoading() ? 'Loading...' : 'Next Image' }}\n    </button>\n\n    <!-- [href] on an anchor -->\n    <a [href]=\"profileUrl\">View Profile</a>\n\n    <!-- Binding to a component INPUT — same syntax! -->\n    <!-- <app-badge [label]=\"badgeText\" [count]=\"badgeCount\" /> -->\n\n    <!-- ❌ WRONG — this passes the string \"imageUrl\", not the value -->\n    <!-- <img src=\"imageUrl\" />  -->\n\n    <!-- ✓ CORRECT — evaluates the expression -->\n    <!-- <img [src]=\"imageUrl\" /> -->\n  `,\n})\nexport class ImageGalleryComponent {\n  images       = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];\n  currentIndex = signal(0);\n  isLoading    = signal(false);\n  imageAlt     = 'Gallery image';\n  profileUrl   = 'https://example.com/profile';\n\n  currentImage = () => this.images[this.currentIndex()];\n\n  loadNext(): void {\n    this.isLoading.set(true);\n    setTimeout(() => {\n      this.currentIndex.update(i => (i + 1) % this.images.length);\n      this.isLoading.set(false);\n    }, 500);\n  }\n}",
+      "explanation": "[disabled]=\"isLoading()\" passes a boolean — when isLoading() is true the button is disabled. Without brackets, disabled=\"isLoading()\" would pass the string 'isLoading()' which is always truthy."
+    },
+
+    {
+      "type": "text",
+      "title": "③ Event Binding — (event)=\"handler($event)\"",
+      "content": "Event binding listens to DOM events and calls a method in your class when they fire. You wrap the event name in parentheses ( ).\n\nCommon events:\n• (click)        — mouse click\n• (input)        — input field value changes\n• (change)       — select/checkbox changes\n• (submit)       — form submission\n• (keydown)      — key pressed\n• (keydown.enter) — specifically the Enter key\n• (mouseenter) / (mouseleave) — hover events\n• (focus) / (blur) — focus events\n\nThe special $event variable holds the native DOM event object. For input elements, $event.target.value gives you the current text."
+    },
+    {
+      "type": "code",
+      "title": "Event Binding Examples",
+      "filename": "event-demo.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'app-event-demo',\n  standalone: true,\n  template: `\n    <!-- (click) — simplest event binding -->\n    <button (click)=\"increment()\">Clicks: {{ count() }}</button>\n\n    <!-- (click) with inline expression (ok for trivial cases) -->\n    <button (click)=\"count.set(0)\">Reset</button>\n\n    <!-- (input) — $event is the InputEvent; .target.value is the typed text -->\n    <input\n      (input)=\"onInput($event)\"\n      placeholder=\"Type something...\"\n    />\n    <p>You typed: {{ typed() }}</p>\n\n    <!-- (keydown.enter) — only fires when Enter is pressed -->\n    <input\n      (keydown.enter)=\"search()\"\n      placeholder=\"Press Enter to search\"\n    />\n\n    <!-- (submit) on a form — prevents full page reload -->\n    <form (submit)=\"onSubmit($event)\">\n      <button type=\"submit\">Submit</button>\n    </form>\n\n    <!-- Mouse events -->\n    <div\n      (mouseenter)=\"isHovered.set(true)\"\n      (mouseleave)=\"isHovered.set(false)\"\n    >\n      {{ isHovered() ? 'Hovering!' : 'Hover me' }}\n    </div>\n  `,\n})\nexport class EventDemoComponent {\n  count    = signal(0);\n  typed    = signal('');\n  isHovered = signal(false);\n\n  increment(): void {\n    this.count.update(n => n + 1);\n  }\n\n  // $event is typed as Event; cast target to HTMLInputElement to access .value\n  onInput(event: Event): void {\n    const input = event.target as HTMLInputElement;\n    this.typed.set(input.value);\n  }\n\n  search(): void {\n    console.log('Searching for:', this.typed());\n  }\n\n  onSubmit(event: SubmitEvent): void {\n    event.preventDefault();           // stop the browser from reloading\n    console.log('Form submitted');\n  }\n}",
+      "explanation": "Always call event.preventDefault() on (submit) — without it, the browser reloads the page. For (keydown.enter), Angular filters the event for you automatically."
+    },
+    {
+      "type": "warning",
+      "content": "Avoid complex logic in event binding expressions. (click)=\"count.set(0)\" is fine, but (click)=\"users.filter(u => u.active).map(u => u.id).forEach(...)\" belongs in a class method. Keep templates readable."
+    },
+
+    {
+      "type": "text",
+      "title": "④ Two-Way Binding — [(ngModel)]",
+      "content": "Two-way binding combines property binding and event binding into a single shorthand syntax: [(ngModel)]. It is often called the \"banana in a box\" because of its shape: [( )].\n\nUnder the hood, [(ngModel)]=\"name\" is exactly equivalent to:\n• [ngModel]=\"name\"           — property binding (sets the input value from the class)\n• (ngModelChange)=\"name=$event\" — event binding (updates the class when the input changes)\n\nImportant: ngModel requires FormsModule to be imported in your component's imports array.\n\nTwo-way binding is best for simple form inputs. For complex forms with validation, use ReactiveFormsModule instead."
+    },
+    {
+      "type": "code",
+      "title": "Two-Way Binding with ngModel",
+      "filename": "profile-form.component.ts",
+      "language": "typescript",
+      "code": "import { Component } from '@angular/core';\nimport { FormsModule } from '@angular/forms';  // required!\n\n@Component({\n  selector: 'app-profile-form',\n  standalone: true,\n  imports: [FormsModule],                       // import FormsModule here\n  template: `\n    <!-- Two-way binding — input and class property stay in sync -->\n    <input [(ngModel)]=\"username\" placeholder=\"Username\" />\n    <p>Hello, {{ username }}!</p>\n\n    <!-- Works with select dropdowns -->\n    <select [(ngModel)]=\"role\">\n      <option value=\"admin\">Admin</option>\n      <option value=\"user\">User</option>\n      <option value=\"guest\">Guest</option>\n    </select>\n    <p>Role: {{ role }}</p>\n\n    <!-- Works with checkboxes -->\n    <input type=\"checkbox\" [(ngModel)]=\"newsletter\" id=\"nl\" />\n    <label for=\"nl\">Subscribe to newsletter</label>\n    <p>Subscribed: {{ newsletter }}</p>\n\n    <!-- ── What [(ngModel)] actually expands to: ────────────\n    <input\n      [ngModel]=\"username\"              ← property binding\n      (ngModelChange)=\"username = $event\" ← event binding\n    />\n    ──────────────────────────────────────────────────────── -->\n  `,\n})\nexport class ProfileFormComponent {\n  username   = 'Angular Dev';\n  role       = 'user';\n  newsletter = false;\n}",
+      "explanation": "FormsModule must be in the component's imports array. Without it, Angular throws 'Can't bind to ngModel since it isn't a known property of input'."
+    },
+
+    {
+      "type": "diagram",
+      "title": "Two-Way Binding Under the Hood",
+      "svg": "<svg viewBox='0 0 620 200' xmlns='http://www.w3.org/2000/svg' font-family='Inter,sans-serif'><rect width='620' height='200' rx='12' fill='#0f172a'/><text x='310' y='26' text-anchor='middle' fill='#94a3b8' font-size='11' font-weight='600' letter-spacing='2'>[(ngModel)] IS JUST SHORTHAND FOR:</text><rect x='30' y='44' width='170' height='130' rx='10' fill='#065f46' opacity='0.2'/><rect x='30' y='44' width='170' height='130' rx='10' fill='none' stroke='#10b981' stroke-width='1.5'/><text x='115' y='68' text-anchor='middle' fill='#34d399' font-size='12' font-weight='700'>Component Class</text><rect x='50' y='80' width='130' height='28' rx='6' fill='#0f172a'/><text x='115' y='98' text-anchor='middle' fill='#34d399' font-size='11' font-family='monospace'>username = \"Ada\"</text><rect x='50' y='118' width='130' height='28' rx='6' fill='#0f172a'/><text x='115' y='136' text-anchor='middle' fill='#94a3b8' font-size='10' font-family='monospace'>updated when user types</text><rect x='420' y='44' width='170' height='130' rx='10' fill='#1e3a5f' opacity='0.5'/><rect x='420' y='44' width='170' height='130' rx='10' fill='none' stroke='#3b82f6' stroke-width='1.5'/><text x='505' y='68' text-anchor='middle' fill='#60a5fa' font-size='12' font-weight='700'>Input Element</text><rect x='440' y='80' width='130' height='28' rx='6' fill='#0f172a'/><text x='505' y='98' text-anchor='middle' fill='#60a5fa' font-size='11' font-family='monospace'>value=\"Ada\"</text><rect x='440' y='118' width='130' height='28' rx='6' fill='#0f172a'/><text x='505' y='136' text-anchor='middle' fill='#94a3b8' font-size='10' font-family='monospace'>emits on every keystroke</text><path d='M200 90 L420 90' stroke='#f97316' stroke-width='2' marker-end='url(#ao)'/><text x='310' y='82' text-anchor='middle' fill='#f97316' font-size='10' font-weight='700'>[ngModel]=\"username\"</text><text x='310' y='93' text-anchor='middle' fill='#64748b' font-size='9'>Property Binding</text><path d='M420 128 L200 128' stroke='#a855f7' stroke-width='2' marker-end='url(#ap)'/><text x='310' y='120' text-anchor='middle' fill='#a855f7' font-size='10' font-weight='700'>(ngModelChange)=\"username=$event\"</text><text x='310' y='131' text-anchor='middle' fill='#64748b' font-size='9'>Event Binding</text><rect x='205' y='160' width='210' height='28' rx='6' fill='#1e293b'/><text x='310' y='178' text-anchor='middle' fill='#10b981' font-size='12' font-weight='700'>[(ngModel)]=\"username\" ✓ shorthand</text><defs><marker id='ao' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#f97316'/></marker><marker id='ap' markerWidth='7' markerHeight='5' refX='5' refY='2.5' orient='auto'><path d='M0,0 L7,2.5 L0,5 Z' fill='#a855f7'/></marker></defs></svg>",
+      "caption": "[(ngModel)] is syntactic sugar — Angular expands it into separate property and event bindings behind the scenes."
+    },
+
+    {
+      "type": "text",
+      "title": "Class Binding and Style Binding",
+      "content": "Beyond standard property binding, Angular provides shorthand syntaxes for toggling CSS classes and inline styles dynamically.\n\nClass binding:\n• [class.active]=\"isActive\"        — adds 'active' class when isActive is truthy\n• [class]=\"'btn btn-primary'\"      — sets the entire class attribute as a string\n• [ngClass]=\"{ active: isActive, hidden: isHidden }\" — object map (needs NgClass)\n\nStyle binding:\n• [style.color]=\"textColor\"          — sets a single CSS property\n• [style.font-size.px]=\"fontSize\"    — with a unit suffix (.px, .em, .%)\n• [ngStyle]=\"{ color: textColor }\"   — object map (needs NgStyle)\n\nClass and style bindings are pure convenience — under the hood they are property bindings on the element's classList and style objects."
+    },
+    {
+      "type": "code",
+      "title": "Class & Style Binding",
+      "filename": "class-style-demo.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal } from '@angular/core';\n\n@Component({\n  selector: 'app-class-style-demo',\n  standalone: true,\n  template: `\n    <!-- ── Class Binding ─────────────────────────────────── -->\n\n    <!-- Toggle a single class based on a boolean -->\n    <button\n      [class.active]=\"isActive()\"\n      (click)=\"isActive.update(v => !v)\"\n    >\n      {{ isActive() ? 'Active ✓' : 'Inactive' }}\n    </button>\n\n    <!-- Toggle multiple classes -->\n    <div\n      [class.error]=\"hasError()\"\n      [class.warning]=\"hasWarning()\"\n      [class.success]=\"isSuccess()\"\n    >\n      Status message\n    </div>\n\n    <!-- Set class from a computed string -->\n    <span [class]=\"badgeClass()\">\n      {{ status() }}\n    </span>\n\n    <!-- ── Style Binding ─────────────────────────────────── -->\n\n    <!-- Set a single CSS property -->\n    <p [style.color]=\"textColor\">Styled text</p>\n\n    <!-- With a unit — no need to append 'px' yourself -->\n    <div [style.font-size.px]=\"fontSize()\">Resizable text</div>\n\n    <!-- Progress bar: width as a percentage -->\n    <div class=\"progress-bar\">\n      <div [style.width.%]=\"progress()\"\n           [style.background-color]=\"progressColor()\"\n           class=\"progress-fill\">\n      </div>\n    </div>\n  `,\n})\nexport class ClassStyleDemoComponent {\n  isActive   = signal(false);\n  hasError   = signal(true);\n  hasWarning = signal(false);\n  isSuccess  = signal(false);\n  status     = signal<'online' | 'offline' | 'busy'>('online');\n  fontSize   = signal(16);\n  progress   = signal(65);\n  textColor  = '#DD0031';\n\n  badgeClass = () => ({\n    'badge': true,\n    'badge-success': this.status() === 'online',\n    'badge-danger':  this.status() === 'offline',\n    'badge-warning': this.status() === 'busy',\n  });\n\n  progressColor = () =>\n    this.progress() < 33 ? '#ef4444' :\n    this.progress() < 66 ? '#f59e0b' : '#22c55e';\n}",
+      "explanation": "[style.width.%]=\"progress()\" automatically appends the '%' unit. You can use .px, .em, .rem, .%, .vh, .vw as suffixes."
+    },
+
+    {
+      "type": "text",
+      "title": "Template Reference Variables — #name",
+      "content": "A template reference variable gives you a direct TypeScript reference to a DOM element, Angular component, or directive inside your template, without needing ViewChild in the class.\n\nYou declare one with a # prefix on any element: <input #myInput />. Then you can:\n• Read properties in the same template: {{ myInput.value }}\n• Pass it to methods: (click)=\"submit(myInput.value)\"\n• Reference a component: <app-form #formRef /> — gives you the component instance\n\nTemplate reference variables are local to the template — you cannot access them in the TypeScript class directly. For that, use @ViewChild."
+    },
+    {
+      "type": "code",
+      "title": "Template Reference Variables",
+      "filename": "template-ref-demo.component.ts",
+      "language": "typescript",
+      "code": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-template-ref-demo',\n  standalone: true,\n  template: `\n    <!-- #searchInput = reference to the <input> HTMLElement -->\n    <input #searchInput type=\"text\" placeholder=\"Search...\" />\n\n    <!-- Use the reference inline — no class property needed! -->\n    <button (click)=\"search(searchInput.value)\">Search</button>\n    <button (click)=\"searchInput.value = ''\">Clear</button>\n\n    <!-- Read the value with interpolation -->\n    <p>Query: {{ searchInput.value }}</p>\n\n    <!-- ── Reference a child component ─────────────────────── -->\n    <!-- <app-counter #counter />\n         <button (click)=\"counter.reset()\">Reset counter</button> -->\n    <!-- #counter gives you the CounterComponent instance,\n         letting you call its methods directly from the template -->\n\n    <!-- ── Reference a form ─────────────────────────────────── -->\n    <form #loginForm=\"ngForm\" (submit)=\"onSubmit(loginForm.value)\">\n      <input name=\"email\"    ngModel type=\"email\"    placeholder=\"Email\" />\n      <input name=\"password\" ngModel type=\"password\" placeholder=\"Password\" />\n      <button [disabled]=\"loginForm.invalid\">Login</button>\n      <p>Valid: {{ loginForm.valid }}</p>\n    </form>\n  `,\n})\nexport class TemplateRefDemoComponent {\n  search(query: string): void {\n    console.log('Searching for:', query);\n  }\n\n  onSubmit(value: { email: string; password: string }): void {\n    console.log('Form value:', value);\n  }\n}",
+      "explanation": "#loginForm=\"ngForm\" assigns the NgForm directive (not the raw element) to the variable — this is how you get access to Angular's form validation state inside the template."
+    },
+    {
+      "type": "note",
+      "content": "Template reference variables are evaluated at render time. If you reference a variable before it is rendered (e.g., inside an @if block that starts hidden), the variable will be undefined until the element appears. Use ViewChild with { static: false } in the class for such cases."
+    },
+
+    {
+      "type": "text",
+      "title": "Putting It All Together",
+      "content": "Real Angular templates combine all four binding types naturally. Here is a typical search component using every type of binding:\n\n• Interpolation to display results count\n• Property binding to disable the button while loading\n• Event binding to handle input and button clicks\n• Two-way binding on the search field\n• Class binding to highlight active filters\n• Template reference variable for the input element"
+    },
+    {
+      "type": "code",
+      "title": "All Binding Types Combined",
+      "filename": "search.component.ts",
+      "language": "typescript",
+      "code": "import { Component, signal, computed } from '@angular/core';\nimport { FormsModule } from '@angular/forms';\n\nconst ITEMS = ['Angular', 'React', 'Vue', 'Svelte', 'Next.js', 'Nuxt', 'Astro'];\n\n@Component({\n  selector: 'app-search',\n  standalone: true,\n  imports: [FormsModule],\n  template: `\n    <div class=\"search-wrapper\">\n\n      <!-- ① Interpolation -->\n      <h2>Found {{ results().length }} of {{ total }} frameworks</h2>\n\n      <!-- ④ Two-way binding — #searchBox is a template ref variable -->\n      <input\n        #searchBox\n        [(ngModel)]=\"query\"\n        (keydown.escape)=\"query = ''; searchBox.blur()\"\n        placeholder=\"Search frameworks...\"\n      />\n\n      <!-- ② Property + ③ Event binding -->\n      <button\n        [disabled]=\"!query\"\n        (click)=\"query = ''\"\n      >\n        Clear\n      </button>\n\n      <!-- Class binding for active filter -->\n      <button\n        [class.active]=\"onlyPopular()\"\n        (click)=\"onlyPopular.update(v => !v)\"\n      >\n        Popular only\n      </button>\n\n      <!-- ② Property binding: hide list when empty query -->\n      <ul [hidden]=\"!query\">\n        @for (item of results(); track item) {\n          <li>{{ item }}</li>        <!-- ① Interpolation -->\n        }\n      </ul>\n\n    </div>\n  `,\n})\nexport class SearchComponent {\n  query       = '';               // used with [(ngModel)]\n  onlyPopular = signal(false);\n  total       = ITEMS.length;\n\n  results = computed(() => {\n    const q = this.query.toLowerCase();\n    return ITEMS.filter(item => item.toLowerCase().includes(q));\n  });\n}",
+      "explanation": "Notice how query is a plain string (not a signal) because [(ngModel)] requires a regular writable property. Signals can't be used directly with ngModel — use a plain property or handle it with (ngModelChange)."
+    },
+    {
+      "type": "tip",
+      "content": "Angular 17+ signals and [(ngModel)] don't mix directly. If you want reactive search with signals, use (ngModelChange)=\"query.set($event)\" and [ngModel]=\"query()\" instead of the shorthand [(ngModel)]."
+    }
+  ],
+  "interviewQuestions": [
+    {
+      "q": "What are the four types of data binding in Angular and what direction does data flow in each?",
+      "a": "① Interpolation {{ }} — class → template (read-only, renders text). ② Property binding [prop]=\"expr\" — class → DOM property (dynamic attribute values). ③ Event binding (event)=\"handler()\" — DOM event → class method (reacts to user actions). ④ Two-way binding [(ngModel)] — class ↔ DOM (bidirectional, combines ② and ③). Only event binding has data flowing from the template back to the class."
+    },
+    {
+      "q": "What is the difference between an HTML attribute and a DOM property? Why does this matter for property binding?",
+      "a": "HTML attributes are what you write in the source HTML — they initialise DOM properties but don't update them. DOM properties are the live, current state of the element. For example, the value attribute sets the initial value of an input; after the user types, the DOM property value reflects the current text but the attribute still holds the initial value. Property binding [value]=\"x\" always targets the live DOM property, so it stays in sync with your data."
+    },
+    {
+      "q": "What is the 'banana in a box' and what does [(ngModel)] expand to?",
+      "a": "The 'banana in a box' is a nickname for the two-way binding syntax [(ngModel)], because [( )] looks like a banana inside a box. It expands to a property binding plus an event binding: [ngModel]=\"name\" (sets the input's value from the class) combined with (ngModelChange)=\"name = $event\" (updates the class when the user types). They are exactly equivalent, the shorthand just saves you from writing both."
+    },
+    {
+      "q": "What module must be imported to use ngModel, and where do you import it?",
+      "a": "FormsModule from @angular/forms. With standalone components (Angular 17+), you add it to the imports array of the @Component decorator: imports: [FormsModule]. Without it Angular throws: 'Can't bind to ngModel since it isn't a known property of input'."
+    },
+    {
+      "q": "What is $event in event binding and how is it typed?",
+      "a": "$event is the native DOM event object emitted by the event. Its type depends on the event — (click) gives MouseEvent, (input) gives InputEvent, (keydown) gives KeyboardEvent, (submit) gives SubmitEvent. When a component emits via output(), $event is the value passed to emit(). You should cast $event.target to the appropriate element type (e.g., event.target as HTMLInputElement) to get typed access to .value."
+    },
+    {
+      "q": "What is a template reference variable and how is it different from ViewChild?",
+      "a": "A template reference variable (#name) is a local alias declared in the template that refers to a DOM element, component, or directive. It can only be used within the same template — you can't access it in the TypeScript class. ViewChild is a class-level decorator (@ViewChild) that gives the TypeScript class a reference to a child element or component, available after ngAfterViewInit. Use template references for simple in-template interactions; use ViewChild when you need to call methods or read values in the class."
+    },
+    {
+      "q": "How do you conditionally add a CSS class in Angular without using ngClass?",
+      "a": "Use class binding: [class.your-class]=\"booleanExpression\". For example, [class.active]=\"isActive()\" adds the 'active' class when the expression is truthy and removes it when falsy. This is the simplest and most readable option for toggling a single class. For multiple classes based on conditions, ngClass with an object map { 'class-a': condA, 'class-b': condB } is more convenient."
+    },
+    {
+      "q": "Can you use Angular Signals directly with [(ngModel)]?",
+      "a": "No — [(ngModel)] requires a plain writable class property, not a signal. A signal is a function, so [(ngModel)]=\"mySignal\" would try to two-way bind to the function itself, not its value. Instead, split it: [ngModel]=\"mySignal()\" (read the signal value) and (ngModelChange)=\"mySignal.set($event)\" (write back on change). Or use a plain property and update the signal manually in the event handler."
+    },
+    {
+      "q": "What is the difference between [class]=\"expr\" and [class.name]=\"bool\"?",
+      "a": "[class]=\"expr\" replaces the entire className string with the result of the expression — useful when you compute the full class list. [class.name]=\"bool\" adds or removes just one named class based on the boolean, leaving all other classes unchanged. The single-class form is usually safer since it doesn't accidentally remove classes added by other bindings or static class attributes."
+    },
+    {
+      "q": "What happens if you write (click)=\"doSomething\" without the parentheses?",
+      "a": "Without parentheses — (click)=\"doSomething\" — you are not calling the method; you are assigning the method reference to the event handler. Angular will not throw an error, but when the click fires, nothing visible will happen because doSomething is a function reference, not an invocation. Always write (click)=\"doSomething()\" with parentheses to actually call the method."
+    }
+  ]
+}
